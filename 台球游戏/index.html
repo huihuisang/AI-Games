@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>网页版台球游戏</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden; /* 防止出现滚动条 */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: #f0f0f0;
+      }
+      canvas {
+        border: 2px solid #333;
+        background: #076324;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="debug"></div>
+    <script>
+      // 等待页面加载完成
+      window.onload = function () {
+        // 设置画布大小
+        const canvas = document.getElementById("gameCanvas");
+
+        // 计算标准台球桌比例（2:1）
+        const maxWidth = window.innerWidth - 40;
+        const maxHeight = window.innerHeight - 40;
+
+        // 根据屏幕尺寸计算最佳台球桌大小
+        if (maxWidth / 2 > maxHeight) {
+          // 如果屏幕太宽，以高度为基准
+          canvas.height = maxHeight;
+          canvas.width = maxHeight * 2;
+        } else {
+          // 如果屏幕太高，以宽度为基准
+          canvas.width = maxWidth;
+          canvas.height = maxWidth / 2;
+        }
+
+        // 加载游戏脚本
+        const script = document.createElement("script");
+        script.src = "game.js";
+        document.body.appendChild(script);
+      };
+    </script>
+  </body>
+</html>

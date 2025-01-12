@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>2048游戏</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #faf8ef;
+        font-family: Arial, sans-serif;
+        touch-action: none; /* 防止移动设备上的滚动 */
+      }
+      #gameContainer {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+      #gameCanvas {
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      #score {
+        font-size: 32px;
+        font-weight: bold;
+        color: #776e65;
+      }
+      #gameOver {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(238, 228, 218, 0.95);
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        z-index: 100;
+      }
+      button {
+        padding: 15px 30px;
+        font-size: 20px;
+        background-color: #8f7a66;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      button:hover {
+        background-color: #9f8b77;
+      }
+      @media (max-width: 768px) {
+        #score {
+          font-size: 24px;
+        }
+        button {
+          padding: 12px 24px;
+          font-size: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="gameContainer">
+      <div id="score">分数: 0</div>
+      <canvas id="gameCanvas"></canvas>
+    </div>
+    <div id="gameOver">
+      <h2>游戏结束!</h2>
+      <p>最终得分: <span id="finalScore">0</span></p>
+      <button onclick="restartGame()">重新开始</button>
+    </div>
+    <script src="game.js"></script>
+  </body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>网页版贪吃蛇</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #f0f0f0;
+        font-family: Arial, sans-serif;
+      }
+      canvas {
+        border: 2px solid #333;
+        margin: 20px;
+        background-color: #fff;
+      }
+      #score {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+      #gameOver {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        margin-top: 10px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      .controls {
+        margin-bottom: 20px;
+        font-size: 18px;
+      }
+
+      .controls input {
+        width: 200px;
+        margin: 0 10px;
+        vertical-align: middle;
+      }
+
+      #speedValue {
+        min-width: 30px;
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="score">得分: 0</div>
+    <div class="controls">
+      <label for="speedControl">游戏速度: </label>
+      <input type="range" id="speedControl" min="1" max="20" value="10" />
+      <span id="speedValue">10</span>
+    </div>
+    <canvas id="gameCanvas" width="600" height="600"></canvas>
+    <div id="gameOver">
+      <h2>游戏结束!</h2>
+      <p>你的得分: <span id="finalScore">0</span></p>
+      <button onclick="restartGame()">重新开始</button>
+    </div>
+    <script src="game.js"></script>
+  </body>
+</html>
