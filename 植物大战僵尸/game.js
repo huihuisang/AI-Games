@@ -38,8 +38,124 @@ class Game {
         health: 100,
         rowClear: true,
       },
+      smallMushroom: {
+        cost: 75,
+        cooldown: 2000,
+        damage: 15,
+        health: 80,
+        nightOnly: true, // 夜间专用
+      },
+      bigMushroom: {
+        cost: 150,
+        cooldown: 1800,
+        damage: 40,
+        health: 120,
+        splashDamage: true, // 溅射伤害
+        nightOnly: true,
+      },
+      poisonMushroom: {
+        cost: 125,
+        cooldown: 2500,
+        damage: 20,
+        health: 100,
+        poisonEffect: true, // 毒素效果
+        nightOnly: true,
+      },
+      repeater: {
+        cost: 200,
+        cooldown: 1500,
+        damage: 20,
+        health: 100,
+        doubleShot: true, // 连续发射两颗豌豆
+      },
+      gatlingPea: {
+        cost: 450,
+        cooldown: 1400,
+        damage: 15,
+        health: 100,
+        multiShot: 4, // 连续发射4颗豌豆
+      },
+      pumpkin: {
+        cost: 125,
+        cooldown: 30000,
+        damage: 0,
+        health: 600,
+        armor: true, // 可以套在其他植物上
+      },
+      spikeweed: {
+        cost: 100,
+        cooldown: 1000,
+        damage: 10,
+        health: 100,
+        groundAttack: true, // 地刺攻击
+      },
+      torchwood: {
+        cost: 175,
+        cooldown: 0,
+        damage: 0,
+        health: 100,
+        firePea: true, // 让经过的豌豆变成火豌豆
+      },
+      magnetShroom: {
+        cost: 100,
+        cooldown: 15000,
+        damage: 0,
+        health: 100,
+        magnetic: true, // 可以吸走金属僵尸的装备
+        nightOnly: true,
+      },
     };
 
+    this.zombieTypes = [
+      {
+        type: "normal",
+        health: 100,
+        speed: 0.3,
+        damage: 1,
+      },
+      {
+        type: "conehead",
+        health: 200,
+        speed: 0.25,
+        damage: 1,
+      },
+      {
+        type: "buckethead",
+        health: 300,
+        speed: 0.2,
+        damage: 1.5,
+      },
+      {
+        type: "newspaper",
+        health: 150,
+        speed: 0.2,
+        damage: 1,
+        enraged: true,
+      },
+      {
+        type: "dancing",
+        health: 180,
+        speed: 0.35,
+        damage: 1,
+        summonBackup: true,
+      },
+      {
+        type: "football",
+        health: 400,
+        speed: 0.4,
+        damage: 2,
+      },
+      {
+        type: "pole",
+        health: 100,
+        speed: 0.5,
+        damage: 1,
+        vaulting: true,
+      },
+    ];
+
+    this.isNightTime = false;
+    this.game = null;
     this.init();
   }
 
@@ -49,6 +165,8 @@ class Game {
     this.startZombieSpawner();
     this.startSunProduction();
     this.startPlantActions();
+
+    window.game = this;
   }
 
   createBoard() {
@@ -72,6 +190,7 @@ class Game {
       const option = document.createElement("div");
       option.className = "plant-option";
       option.dataset.plant = plantType;
+      option.dataset.name = this.getPlantName(plantType);
       option.style.backgroundImage = `url('images/${plantType}.png')`;
 
       // 添加成本显示
@@ -99,14 +218,15 @@ class Game {
   }
 
   selectPlant(plantType, clickedOption) {
+    const plantInfo = this.plants[plantType];
     if (this.selectedPlant === plantType) {
-      // 如果点击已选中的植物，取消选择
       this.selectedPlant = null;
-    } else if (this.sunCount >= this.plants[plantType].cost) {
-      // 选择新的植物
+    } else if (
+      this.sunCount >= plantInfo.cost &&
+      (!plantInfo.nightOnly || (plantInfo.nightOnly && this.isNightTime))
+    ) {
       this.selectedPlant = plantType;
     }
-
     this.updatePlantSelection();
   }
 
@@ -303,15 +423,15 @@ class Game {
 
   spawnZombie() {
     const row = Math.floor(Math.random() * 5);
+    // 随机选择僵尸类型
+    const zombieType =
+      this.zombieTypes[Math.floor(Math.random() * this.zombieTypes.length)];
     const zombie = document.createElement("div");
-    zombie.className = "zombie";
-    zombie.style.backgroundImage = "url('images/zombie.png')";
+    zombie.className = `zombie zombie-${zombieType.type}`;
 
-    // 设置僵尸的起始位置在游戏板最右边外面一点
     const startPosition = 900;
     zombie.style.left = startPosition + "px";
 
-    // 将僵尸添加到对应行的容器中
     const rowContainer = this.gameBoard.children[row * 9];
     rowContainer.appendChild(zombie);
 
@@ -319,8 +439,10 @@ class Game {
       element: zombie,
       row: row,
       position: startPosition,
-      health: 100,
-      speed: 0.3,
+      health: zombieType.health,
+      speed: zombieType.speed,
+      damage: zombieType.damage,
+      type: zombieType.type,
     };
 
     this.zombies.push(zombieObj);
@@ -329,6 +451,37 @@ class Game {
 
   moveZombie(zombie) {
     const moveInterval = setInterval(() => {
+      // 处理报纸僵尸的激怒状态
+      if (
+        zombie.type === "newspaper" &&
+        zombie.health <= 75 &&
+        !zombie.isEnraged
+      ) {
+        zombie.speed *= 1.5;
+        zombie.isEnraged = true;
+        zombie.element.classList.add("enraged");
+      }
+
+      // 处理撑杆僵尸的跳跃
+      if (zombie.type === "pole" && zombie.vaulting) {
+        const col = Math.floor(zombie.position / 100);
+        if (col >= 0 && col < 9 && this.board[zombie.row][col]) {
+          zombie.position -= 100; // 跳过一格
+          zombie.vaulting = false;
+          zombie.speed *= 0.7; // 跳跃后速度降低
+        }
+      }
+
+      // 处理舞王僵尸召唤伴舞
+      if (
+        zombie.type === "dancing" &&
+        zombie.summonBackup &&
+        Math.random() < 0.01
+      ) {
+        this.summonBackupDancers(zombie.row);
+        zombie.summonBackup = false;
+      }
+
       zombie.position -= zombie.speed;
       zombie.element.style.left = zombie.position + "px";
 
@@ -407,7 +560,7 @@ class Game {
   }
 
   startSunProduction() {
-    setInterval(() => this.spawnSun(), 10000);
+    this.sunProductionInterval = setInterval(() => this.spawnSun(), 10000);
   }
 
   updateSunCount() {
@@ -432,6 +585,88 @@ class Game {
     // 重置阳光数量
     this.sunCount = 50;
     this.updateSunCount();
+  }
+
+  // 添加昼夜切换系统
+  toggleDayNight() {
+    this.isNightTime = !this.isNightTime;
+    const gameContainer = document.querySelector(".game-container");
+
+    if (this.isNightTime) {
+      gameContainer.classList.add("night-time");
+      // 减少阳光生产
+      clearInterval(this.sunProductionInterval);
+      this.sunProductionInterval = setInterval(() => this.spawnSun(), 15000);
+    } else {
+      gameContainer.classList.remove("night-time");
+      // 恢复正常阳光生产
+      clearInterval(this.sunProductionInterval);
+      this.sunProductionInterval = setInterval(() => this.spawnSun(), 10000);
+    }
+
+    this.updatePlantSelection();
+  }
+
+  // 添加召唤伴舞僵尸的方法
+  summonBackupDancers(row) {
+    const adjacentRows = [row - 1, row + 1].filter((r) => r >= 0 && r < 5);
+    adjacentRows.forEach((r) => {
+      const backupZombie = {
+        type: "normal",
+        health: 75,
+        speed: 0.35,
+        damage: 0.8,
+      };
+      this.spawnSpecificZombie(backupZombie, r);
+    });
+  }
+
+  // 添加生成特定僵尸的方法
+  spawnSpecificZombie(zombieType, row) {
+    const zombie = document.createElement("div");
+    zombie.className = `zombie zombie-${zombieType.type}`;
+
+    const startPosition = 900;
+    zombie.style.left = startPosition + "px";
+
+    const rowContainer = this.gameBoard.children[row * 9];
+    rowContainer.appendChild(zombie);
+
+    const zombieObj = {
+      element: zombie,
+      row: row,
+      position: startPosition,
+      health: zombieType.health,
+      speed: zombieType.speed,
+      damage: zombieType.damage,
+      type: zombieType.type,
+    };
+
+    this.zombies.push(zombieObj);
+    this.moveZombie(zombieObj);
+  }
+
+  // 添加获取植物名称的方法
+  getPlantName(plantType) {
+    const nameMap = {
+      sunflower: "向日葵",
+      peashooter: "豌豆射手",
+      wallnut: "坚果墙",
+      icePeashooter: "寒冰射手",
+      cherryBomb: "樱桃炸弹",
+      doublePeashooter: "双发射手",
+      jalapeno: "火爆辣椒",
+      smallMushroom: "小蘑菇",
+      bigMushroom: "大蘑菇",
+      poisonMushroom: "毒蘑菇",
+      repeater: "复读射手",
+      gatlingPea: "加特林",
+      pumpkin: "南瓜头",
+      spikeweed: "地刺",
+      torchwood: "火炬树",
+      magnetShroom: "磁力菇",
+    };
+    return nameMap[plantType] || plantType;
   }
 }
 

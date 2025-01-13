@@ -19,18 +19,27 @@ body {
   background: #458b00;
   border: 4px solid #654321;
   border-radius: 10px;
-  padding-top: 100px;
+  padding-top: 115px;
 }
 
 .sun-counter {
   position: absolute;
-  top: 20px;
-  left: 20px;
+  top: 15px;
+  left: 15px;
   background: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 10px;
+  color: yellow;
+  padding: 8px 12px;
   border-radius: 5px;
-  font-size: 20px;
+  font-size: 16px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: auto;
+}
+
+.sun-counter::before {
+  content: "☀️";
 }
 
 .game-board {
@@ -38,7 +47,7 @@ body {
   grid-template-columns: repeat(9, 1fr);
   grid-template-rows: repeat(5, 1fr);
   height: 500px;
-  margin-top: 0;
+  margin-top: 5px;
 }
 
 .grid-cell {
@@ -49,30 +58,77 @@ body {
 
 .plant-selector {
   position: absolute;
-  top: 10px;
-  left: 150px;
-  right: 20px;
-  height: 70px;
+  top: 15px;
+  left: 140px;
+  right: 15px;
+  height: 90px;
   background: rgba(0, 0, 0, 0.7);
   border-radius: 5px;
   display: flex;
-  padding: 5px;
-  gap: 10px;
+  padding: 20px 10px 10px;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
+
+.plant-selector::-webkit-scrollbar {
+  height: 8px;
+  margin-top: 10px;
+}
+
+.plant-selector::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  margin: 0 5px;
+}
+
+.plant-selector::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.plant-selector::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .plant-option {
-  width: 60px;
+  min-width: 60px;
   height: 60px;
+  margin-bottom: 10px;
   background: #555;
   border-radius: 5px;
   cursor: pointer;
   transition: transform 0.2s;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   color: white;
   font-size: 12px;
   position: relative;
+  padding: 2px;
+}
+
+.plant-option::before {
+  content: attr(data-name);
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  color: white;
+}
+
+.plant-option:hover::before {
+  opacity: 1;
 }
 
 .plant-option.selected {
@@ -249,4 +305,222 @@ body {
 .pea.ice-pea {
   background-color: #00f;
   box-shadow: 0 0 5px rgba(0, 0, 255, 0.5);
+}
+
+.plant[style*="smallMushroom"]::after {
+  content: "🍄";
+  font-size: 25px;
+}
+
+.plant[style*="bigMushroom"]::after {
+  content: "🍄";
+  font-size: 35px;
+}
+
+.plant[style*="poisonMushroom"]::after {
+  content: "🍄";
+  font-size: 30px;
+  filter: hue-rotate(90deg);
+}
+
+.zombie-conehead::after {
+  content: "🧟";
+  font-size: 40px;
+  color: #ff8c00;
+}
+
+.zombie-buckethead::after {
+  content: "🧟";
+  font-size: 40px;
+  color: #c0c0c0;
+}
+
+.game-container.night-time {
+  background: #1a237e;
+  position: relative;
+}
+
+.game-container.night-time::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 32, 0.5);
+  pointer-events: none;
+}
+
+.game-container.night-time .plant-selector {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.game-container.night-time .sun-counter {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.toggle-day-night {
+  position: absolute;
+  top: 55px;
+  left: 15px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 1000;
+  font-size: 14px;
+  display: block;
+}
+
+.game-container:not(.night-time) .toggle-day-night::before {
+  content: "🌙";
+  margin-right: 5px;
+}
+
+.game-container.night-time .toggle-day-night::before {
+  content: "☀️";
+  margin-right: 5px;
+}
+
+.plant-option[data-plant="smallMushroom"]::after {
+  content: "🍄";
+  font-size: 24px;
+}
+
+.plant-option[data-plant="bigMushroom"]::after {
+  content: "🍄";
+  font-size: 24px;
+}
+
+.plant-option[data-plant="poisonMushroom"]::after {
+  content: "🍄";
+  font-size: 24px;
+  filter: hue-rotate(90deg);
+}
+
+/* 报纸僵尸 */
+.zombie-newspaper::after {
+  content: "🧟";
+  font-size: 40px;
+  color: #4a90e2;
+}
+
+/* 舞王僵尸 */
+.zombie-dancing::after {
+  content: "🧟";
+  font-size: 40px;
+  color: #e91e63;
+}
+
+/* 橄榄球僵尸 */
+.zombie-football::after {
+  content: "🧟";
+  font-size: 40px;
+  color: #8bc34a;
+}
+
+/* 撑杆僵尸 */
+.zombie-pole::after {
+  content: "🧟";
+  font-size: 40px;
+  color: #ffc107;
+}
+
+/* 被激怒的报纸僵尸 */
+.zombie-newspaper.enraged::after {
+  color: #ff4444;
+  animation: shake 0.5s infinite;
+}
+
+/* 添加一个摇晃动画 */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}
+
+/* 新增植物样式 */
+.plant[style*="repeater"]::after {
+  content: "🌿";
+  font-size: 30px;
+  transform: scaleX(-1);
+  color: #4caf50;
+}
+
+.plant[style*="gatlingPea"]::after {
+  content: "🌿";
+  font-size: 35px;
+  transform: scaleX(-1);
+  color: #2e7d32;
+}
+
+.plant[style*="pumpkin"]::after {
+  content: "🎃";
+  font-size: 30px;
+}
+
+.plant[style*="spikeweed"]::after {
+  content: "🌵";
+  font-size: 25px;
+  transform: rotate(90deg);
+}
+
+.plant[style*="torchwood"]::after {
+  content: "🔥";
+  font-size: 30px;
+}
+
+.plant[style*="magnetShroom"]::after {
+  content: "🧲";
+  font-size: 30px;
+  color: #9c27b0;
+}
+
+/* 火豌豆样式 */
+.pea.fire-pea {
+  background-color: #ff4444;
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.7);
+}
+
+/* 选择器中的新植物样式 */
+.plant-option[data-plant="repeater"]::after {
+  content: "🌿";
+  font-size: 24px;
+  color: #4caf50;
+}
+
+.plant-option[data-plant="gatlingPea"]::after {
+  content: "🌿";
+  font-size: 24px;
+  color: #2e7d32;
+}
+
+.plant-option[data-plant="pumpkin"]::after {
+  content: "🎃";
+  font-size: 24px;
+}
+
+.plant-option[data-plant="spikeweed"]::after {
+  content: "🌵";
+  font-size: 24px;
+}
+
+.plant-option[data-plant="torchwood"]::after {
+  content: "🔥";
+  font-size: 24px;
+}
+
+.plant-option[data-plant="magnetShroom"]::after {
+  content: "🧲";
+  font-size: 24px;
+  color: #9c27b0;
 }

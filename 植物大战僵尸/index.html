@@ -8,7 +8,10 @@
   </head>
   <body>
     <div class="game-container">
-      <div class="sun-counter">阳光: <span id="sun-count">50</span></div>
+      <div class="sun-counter"><span id="sun-count">50</span></div>
+      <button class="toggle-day-night" onclick="game.toggleDayNight()">
+        切换昼夜
+      </button>
       <div class="game-board" id="game-board">
         <!-- 游戏格子将通过JavaScript动态生成 -->
       </div>

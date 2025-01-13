@@ -17,14 +17,15 @@ body {
   display: flex;
   gap: 20px;
   padding: 20px;
-  background-color: white;
+  background-color: #fce4ec;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border: 3px solid #ff69b4;
 }
 
 #gameCanvas {
-  border: 2px solid #333;
-  background-color: #fff;
+  border: 3px solid #ff69b4;
+  background-color: rgba(255, 255, 255, 0.9);
 }
 
 .game-info {
@@ -69,4 +70,25 @@ button:hover {
 #nextPiece {
   border: 1px solid #333;
   background-color: #fff;
+}
+
+.block-mushroom {
+  background-color: #ff6b6b;
+  border: 2px solid #ff4949;
+  border-radius: 4px;
+  box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.block-big-mushroom {
+  background-color: #4ecdc4;
+  border: 2px solid #45b7af;
+  border-radius: 4px;
+  box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+.block-zombie {
+  background-color: #96ceb4;
+  border: 2px solid #7ab398;
+  border-radius: 4px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
 }
