@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>扫雷游戏</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>扫雷</h1>
+      <div class="game-controls">
+        <button id="newGame">新游戏</button>
+        <span id="mineCount">剩余地雷: 10</span>
+        <span id="timer">时间: 0</span>
+      </div>
+      <div id="gameBoard"></div>
+    </div>
+    <div id="gameMessage" class="game-message">
+      <div class="message-content">
+        <p id="messageText"></p>
+        <button id="closeMessage">确定</button>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>

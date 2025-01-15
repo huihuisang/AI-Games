@@ -1,0 +1,83 @@
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+}
+
+.game-controls {
+  margin: 20px 0;
+}
+
+#gameBoard {
+  display: inline-grid;
+  grid-template-columns: repeat(9, 40px);
+  gap: 1px;
+  background-color: #ccc;
+  padding: 1px;
+}
+
+.cell {
+  width: 40px;
+  height: 40px;
+  background-color: #eee;
+  border: 1px solid #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+}
+
+.cell.revealed {
+  background-color: #ddd;
+}
+
+.cell.mine {
+  background-color: red;
+}
+
+.cell.flagged {
+  background-color: yellow;
+}
+
+button {
+  padding: 8px 16px;
+  margin: 0 10px;
+  cursor: pointer;
+}
+
+#mineCount,
+#timer {
+  margin: 0 10px;
+}
+
+.game-message {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+}
+
+.game-message.show {
+  display: flex;
+}
+
+.message-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.message-content button {
+  margin-top: 10px;
+}
