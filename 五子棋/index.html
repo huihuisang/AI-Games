@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>五子棋游戏</title>
+    <style>
+      /* 整体容器样式 */
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+      }
+
+      /* 游戏标题样式 */
+      h1 {
+        color: #333;
+        margin-bottom: 20px;
+      }
+
+      /* 棋盘样式 */
+      #chessboard {
+        width: 760px;
+        height: 760px;
+        background-color: #dcb35c;
+        border: 1px solid #000;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        position: relative;
+      }
+
+      /* 棋盘线条 */
+      .board-line {
+        position: absolute;
+        background-color: #000;
+      }
+
+      /* 横线 */
+      .horizontal {
+        width: 100%;
+        height: 1px;
+      }
+
+      /* 竖线 */
+      .vertical {
+        width: 1px;
+        height: 100%;
+      }
+
+      /* 天元和星位 */
+      .star-point {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background-color: #000;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+      }
+
+      /* 交叉点样式 */
+      .intersection {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        transform: translate(-50%, -50%);
+        cursor: pointer;
+        z-index: 2;
+      }
+
+      /* 交叉点悬停效果 */
+      .intersection:hover::before {
+        content: "";
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: rgba(0, 0, 0, 0.1);
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      /* 棋子样式 */
+      .piece {
+        position: absolute;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        z-index: 3;
+      }
+
+      /* 黑棋样式 */
+      .black {
+        background: radial-gradient(circle at 30% 30%, #666, #000);
+      }
+
+      /* 白棋样式 */
+      .white {
+        background: radial-gradient(circle at 30% 30%, #fff, #ddd);
+      }
+
+      /* 返回主页按钮 */
+      .back-button {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        padding: 10px 20px;
+        background-color: #333;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        transition: background-color 0.2s;
+        width: 100px;
+        text-align: center;
+        line-height: 20px;
+        display: block;
+      }
+
+      .back-button:hover {
+        background-color: #555;
+      }
+
+      /* 重新开始按钮样式 */
+      #resetButton {
+        position: fixed;
+        top: 80px;
+        left: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #007aff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        width: 100px;
+        line-height: 20px;
+        white-space: nowrap;
+      }
+
+      #resetButton:hover {
+        background-color: #0056b3;
+      }
+
+      /* 游戏状态提示 */
+      #gameStatus {
+        margin: 15px 0;
+        font-size: 18px;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="../index.html" class="back-button">返回主页</a>
+    <div class="container">
+      <h1>五子棋</h1>
+      <div id="gameStatus">黑方回合</div>
+      <div id="chessboard"></div>
+      <button id="resetButton">重新开始</button>
+    </div>
+
+    <script>
+      // 游戏相关变量
+      let isBlackTurn = true;
+      let gameOver = false;
+      const board = Array(19)
+        .fill()
+        .map(() => Array(19).fill(null));
+
+      // 初始化棋盘
+      function initializeBoard() {
+        const chessboard = document.getElementById("chessboard");
+        chessboard.innerHTML = "";
+
+        const margin = 40; // 增加边距
+        const effectiveSize = 760 - 2 * margin;
+        const spacing = effectiveSize / 18; // 19路棋盘有18个间隔
+
+        // 创建横线
+        for (let i = 0; i < 19; i++) {
+          const line = document.createElement("div");
+          line.className = "board-line horizontal";
+          line.style.top = `${margin + i * spacing}px`;
+          chessboard.appendChild(line);
+        }
+
+        // 创建竖线
+        for (let i = 0; i < 19; i++) {
+          const line = document.createElement("div");
+          line.className = "board-line vertical";
+          line.style.left = `${margin + i * spacing}px`;
+          chessboard.appendChild(line);
+        }
+
+        // 添加天元和星位
+        const starPoints = [
+          [3, 3],
+          [3, 9],
+          [3, 15],
+          [9, 3],
+          [9, 9],
+          [9, 15],
+          [15, 3],
+          [15, 9],
+          [15, 15],
+        ];
+
+        starPoints.forEach(([row, col]) => {
+          const star = document.createElement("div");
+          star.className = "star-point";
+          star.style.left = `${margin + col * spacing}px`;
+          star.style.top = `${margin + row * spacing}px`;
+          chessboard.appendChild(star);
+        });
+
+        // 添加交叉点
+        for (let i = 0; i < 19; i++) {
+          for (let j = 0; j < 19; j++) {
+            const intersect = document.createElement("div");
+            intersect.className = "intersection";
+            intersect.style.left = `${margin + j * spacing}px`;
+            intersect.style.top = `${margin + i * spacing}px`;
+            intersect.dataset.row = i;
+            intersect.dataset.col = j;
+            intersect.addEventListener("click", handleCellClick);
+            chessboard.appendChild(intersect);
+          }
+        }
+      }
+
+      // 处理落子
+      function handleCellClick(event) {
+        if (gameOver) return;
+
+        const row = parseInt(event.target.dataset.row);
+        const col = parseInt(event.target.dataset.col);
+
+        // 检查是否可以在此处落子
+        if (board[row][col] !== null) return;
+
+        const margin = 40;
+        const spacing = (760 - 2 * margin) / 18;
+
+        // 创建棋子
+        const piece = document.createElement("div");
+        piece.className = `piece ${isBlackTurn ? "black" : "white"}`;
+        piece.style.left = `${margin + col * spacing}px`;
+        piece.style.top = `${margin + row * spacing}px`;
+        document.getElementById("chessboard").appendChild(piece);
+
+        // 更新棋盘数组
+        board[row][col] = isBlackTurn ? "black" : "white";
+
+        // 检查是否获胜
+        if (checkWin(row, col)) {
+          gameOver = true;
+          document.getElementById("gameStatus").textContent = `${
+            isBlackTurn ? "黑方" : "白方"
+          }获胜！`;
+          return;
+        }
+
+        // 切换回合
+        isBlackTurn = !isBlackTurn;
+        document.getElementById("gameStatus").textContent = `${
+          isBlackTurn ? "黑方" : "白方"
+        }回合`;
+      }
+
+      // 检查是否获胜
+      function checkWin(row, col) {
+        const directions = [
+          [
+            [0, 1],
+            [0, -1],
+          ], // 水平
+          [
+            [1, 0],
+            [-1, 0],
+          ], // 垂直
+          [
+            [1, 1],
+            [-1, -1],
+          ], // 主对角线
+          [
+            [1, -1],
+            [-1, 1],
+          ], // 副对角线
+        ];
+
+        const currentPlayer = board[row][col];
+
+        for (const direction of directions) {
+          let count = 1;
+
+          for (const [dx, dy] of direction) {
+            let x = row + dx;
+            let y = col + dy;
+
+            while (
+              x >= 0 &&
+              x < 19 &&
+              y >= 0 &&
+              y < 19 &&
+              board[x][y] === currentPlayer
+            ) {
+              count++;
+              x += dx;
+              y += dy;
+            }
+          }
+
+          if (count >= 5) return true;
+        }
+
+        return false;
+      }
+
+      // 重置游戏
+      function resetGame() {
+        board.forEach((row) => row.fill(null));
+        isBlackTurn = true;
+        gameOver = false;
+        document.getElementById("gameStatus").textContent = "黑方回合";
+        initializeBoard();
+      }
+
+      // 初始化游戏
+      document
+        .getElementById("resetButton")
+        .addEventListener("click", resetGame);
+      initializeBoard();
+    </script>
+  </body>
+</html>
