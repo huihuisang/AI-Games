@@ -190,20 +190,114 @@ class Minesweeper {
 
   setupEventListeners() {
     const gameBoard = document.getElementById("gameBoard");
-    gameBoard.addEventListener("click", (e) => {
-      if (!e.target.classList.contains("cell")) return;
-      const row = parseInt(e.target.dataset.row);
-      const col = parseInt(e.target.dataset.col);
-      this.reveal(row, col);
+    let longPressTimer;
+    let isLongPress = false;
+    let touchStartTime;
+    let selectedCell = null;
+
+    // 添加键盘事件监听
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "5" && selectedCell) {
+        const row = parseInt(selectedCell.dataset.row);
+        const col = parseInt(selectedCell.dataset.col);
+        this.toggleFlag(row, col);
+      }
     });
 
+    // 添加格子选中状态
+    gameBoard.addEventListener("mouseover", (e) => {
+      if (e.target.classList.contains("cell")) {
+        if (selectedCell) {
+          selectedCell.classList.remove("selected");
+        }
+        selectedCell = e.target;
+        selectedCell.classList.add("selected");
+      }
+    });
+
+    gameBoard.addEventListener("mouseout", (e) => {
+      if (e.target.classList.contains("cell")) {
+        e.target.classList.remove("selected");
+        if (e.target === selectedCell) {
+          selectedCell = null;
+        }
+      }
+    });
+
+    // 触摸开始时启动计时器
+    gameBoard.addEventListener(
+      "touchstart",
+      (e) => {
+        e.preventDefault(); // 阻止默认行为
+        if (!e.target.classList.contains("cell")) return;
+
+        isLongPress = false;
+        touchStartTime = Date.now();
+
+        longPressTimer = setTimeout(() => {
+          isLongPress = true;
+          const row = parseInt(e.target.dataset.row);
+          const col = parseInt(e.target.dataset.col);
+          this.toggleFlag(row, col);
+        }, 500);
+      },
+      { passive: false }
+    );
+
+    // 触摸结束时清除计时器
+    gameBoard.addEventListener(
+      "touchend",
+      (e) => {
+        e.preventDefault(); // 阻止默认行为
+        clearTimeout(longPressTimer);
+
+        if (!e.target.classList.contains("cell")) return;
+
+        const touchDuration = Date.now() - touchStartTime;
+
+        // 只有在触摸时间小于500ms且不是长按的情况下才揭示格子
+        if (touchDuration < 500 && !isLongPress) {
+          const row = parseInt(e.target.dataset.row);
+          const col = parseInt(e.target.dataset.col);
+          this.reveal(row, col);
+        }
+      },
+      { passive: false }
+    );
+
+    // 触摸移动时清除计时器
+    gameBoard.addEventListener(
+      "touchmove",
+      (e) => {
+        e.preventDefault(); // 阻止默认行为
+        clearTimeout(longPressTimer);
+        isLongPress = false;
+      },
+      { passive: false }
+    );
+
+    // 取消默认的上下文菜单
     gameBoard.addEventListener("contextmenu", (e) => {
       e.preventDefault();
-      if (!e.target.classList.contains("cell")) return;
-      const row = parseInt(e.target.dataset.row);
-      const col = parseInt(e.target.dataset.col);
-      this.toggleFlag(row, col);
     });
+
+    // 普通点击事件（仅在非触摸设备上使用）
+    if (!("ontouchstart" in window)) {
+      gameBoard.addEventListener("click", (e) => {
+        if (!e.target.classList.contains("cell")) return;
+        const row = parseInt(e.target.dataset.row);
+        const col = parseInt(e.target.dataset.col);
+        this.reveal(row, col);
+      });
+
+      gameBoard.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        if (!e.target.classList.contains("cell")) return;
+        const row = parseInt(e.target.dataset.row);
+        const col = parseInt(e.target.dataset.col);
+        this.toggleFlag(row, col);
+      });
+    }
 
     document.getElementById("newGame").addEventListener("click", () => {
       this.init();
