@@ -1,524 +1,617 @@
-// 在文件开头添加调试函数
-function debug(message) {
-  console.log(message);
-  document.getElementById("debug").textContent = message;
-}
-
-// 在文件最开始添加（在 debug 函数之前）
-let mouseX = 0;
-let mouseY = 0;
-
-class Ball {
-  constructor(x, y, radius, color, number) {
-    this.x = x;
-    this.y = y;
-    this.radius = radius;
-    this.color = color;
-    this.number = number;
-    this.velocity = { x: 0, y: 0 };
-    this.friction = 0.99; // 摩擦力
+// 等待DOM加载完成
+window.onload = function () {
+  // 在文件开头添加调试函数
+  function debug(message) {
+    console.log(message);
+    document.getElementById("debug").textContent = message;
   }
 
-  draw(ctx) {
-    if (!ctx) {
-      debug("绘制时上下文无效！");
-      return;
-    }
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = this.color;
-    ctx.fill();
-    ctx.closePath();
+  // 获取画布和上下文
+  const canvas = document.getElementById("gameCanvas");
+  if (!canvas) {
+    console.error("找不到画布元素！");
+    return;
+  }
 
-    if (this.number !== undefined && this.number !== 0) {
+  // 设置画布大小
+  const maxWidth = Math.min(window.innerWidth - 100, 1200);
+  const maxHeight = Math.min(window.innerHeight - 150, 600);
+
+  // 保持2:1的比例
+  if (maxWidth / 2 > maxHeight) {
+    canvas.height = maxHeight;
+    canvas.width = maxHeight * 2;
+  } else {
+    canvas.width = maxWidth;
+    canvas.height = maxWidth / 2;
+  }
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    console.error("无法获取画布上下文！");
+    return;
+  }
+
+  // 鼠标位置
+  let mouseX = canvas.width / 4;
+  let mouseY = canvas.height / 2;
+
+  // 游戏状态变量
+  const gameState = {
+    score: 0,
+    remainingBalls: 15,
+    status: "aiming", // aiming, shooting, or gameover
+    isPulling: false,
+    pullStartX: 0,
+    pullStartY: 0,
+    keyPower: 0, // 添加键盘控制的力度
+  };
+
+  // 球的物理属性
+  const FRICTION = 0.985; // 摩擦系数
+  const COLLISION_DAMPING = 0.8; // 碰撞能量损失
+  const MIN_SPEED = 0.1; // 最小速度阈值
+
+  class Ball {
+    constructor(x, y, radius, color, number) {
+      this.x = x;
+      this.y = y;
+      this.radius = radius;
+      this.color = color;
+      this.number = number;
+      this.velocity = { x: 0, y: 0 };
+      this.spin = 0; // 旋转角度
+      this.pocketed = false;
+    }
+
+    draw(ctx) {
+      if (this.pocketed) return;
+
+      // 绘制球体
       ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius / 2, 0, Math.PI * 2);
-      ctx.fillStyle = "white";
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
       ctx.fill();
-      ctx.closePath();
 
-      ctx.fillStyle = "black";
-      ctx.font = `${this.radius}px Arial`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(this.number.toString(), this.x, this.y);
+      // 添加光泽效果
+      const gradient = ctx.createRadialGradient(
+        this.x - this.radius / 3,
+        this.y - this.radius / 3,
+        this.radius / 10,
+        this.x,
+        this.y,
+        this.radius
+      );
+      gradient.addColorStop(0, "rgba(255, 255, 255, 0.8)");
+      gradient.addColorStop(0.2, "rgba(255, 255, 255, 0.2)");
+      gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      // 绘制数字
+      if (this.number !== undefined && this.number !== 0) {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius / 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
+        ctx.fill();
+
+        ctx.fillStyle = "black";
+        ctx.font = `bold ${this.radius}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(this.number.toString(), this.x, this.y);
+      }
+
+      // 绘制阴影
+      ctx.beginPath();
+      ctx.arc(this.x + 2, this.y + 2, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+      ctx.fill();
+    }
+
+    update() {
+      if (this.pocketed) return;
+
+      // 更新位置
+      this.x += this.velocity.x;
+      this.y += this.velocity.y;
+
+      // 应用摩擦力
+      this.velocity.x *= FRICTION;
+      this.velocity.y *= FRICTION;
+
+      // 如果速度小于阈值，停止运动
+      if (Math.abs(this.velocity.x) < MIN_SPEED) this.velocity.x = 0;
+      if (Math.abs(this.velocity.y) < MIN_SPEED) this.velocity.y = 0;
+
+      // 更新旋转
+      this.spin *= FRICTION;
+
+      // 边界碰撞检测
+      this.handleBoundaryCollision();
+    }
+
+    handleBoundaryCollision() {
+      const cushionElasticity = 0.6;
+
+      if (this.x + this.radius > canvas.width - 30) {
+        this.x = canvas.width - 30 - this.radius;
+        this.velocity.x = -this.velocity.x * cushionElasticity;
+        this.spin = -this.spin * 0.5;
+      }
+      if (this.x - this.radius < 30) {
+        this.x = 30 + this.radius;
+        this.velocity.x = -this.velocity.x * cushionElasticity;
+        this.spin = -this.spin * 0.5;
+      }
+      if (this.y + this.radius > canvas.height - 30) {
+        this.y = canvas.height - 30 - this.radius;
+        this.velocity.y = -this.velocity.y * cushionElasticity;
+        this.spin = -this.spin * 0.5;
+      }
+      if (this.y - this.radius < 30) {
+        this.y = 30 + this.radius;
+        this.velocity.y = -this.velocity.y * cushionElasticity;
+        this.spin = -this.spin * 0.5;
+      }
+    }
+
+    collideWith(otherBall) {
+      if (this.pocketed || otherBall.pocketed) return;
+
+      const dx = this.x - otherBall.x;
+      const dy = this.y - otherBall.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < this.radius + otherBall.radius) {
+        // 计算碰撞角度和法线
+        const angle = Math.atan2(dy, dx);
+        const sin = Math.sin(angle);
+        const cos = Math.cos(angle);
+
+        // 计算碰撞后的速度
+        const v1 = Math.sqrt(
+          this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y
+        );
+        const v2 = Math.sqrt(
+          otherBall.velocity.x * otherBall.velocity.x +
+            otherBall.velocity.y * otherBall.velocity.y
+        );
+
+        const direction1 = Math.atan2(this.velocity.y, this.velocity.x);
+        const direction2 = Math.atan2(
+          otherBall.velocity.y,
+          otherBall.velocity.x
+        );
+
+        const newVx1 =
+          v2 * Math.cos(direction2 - angle) * cos +
+          v1 * Math.sin(direction1 - angle) * -sin;
+        const newVy1 =
+          v2 * Math.cos(direction2 - angle) * sin +
+          v1 * Math.sin(direction1 - angle) * cos;
+        const newVx2 =
+          v1 * Math.cos(direction1 - angle) * cos +
+          v2 * Math.sin(direction2 - angle) * -sin;
+        const newVy2 =
+          v1 * Math.cos(direction1 - angle) * sin +
+          v2 * Math.sin(direction2 - angle) * cos;
+
+        // 应用新速度
+        this.velocity.x = newVx1 * COLLISION_DAMPING;
+        this.velocity.y = newVy1 * COLLISION_DAMPING;
+        otherBall.velocity.x = newVx2 * COLLISION_DAMPING;
+        otherBall.velocity.y = newVy2 * COLLISION_DAMPING;
+
+        // 计算自旋效果
+        this.spin = (newVx1 - this.velocity.x) * 0.1;
+        otherBall.spin = (newVx2 - otherBall.velocity.x) * 0.1;
+
+        // 防止球重叠
+        const overlap = (this.radius + otherBall.radius - distance) / 2;
+        const pushX = overlap * Math.cos(angle);
+        const pushY = overlap * Math.sin(angle);
+        this.x += pushX;
+        this.y += pushY;
+        otherBall.x -= pushX;
+        otherBall.y -= pushY;
+      }
     }
   }
 
-  update() {
-    // 更新球的位置
-    this.x += this.velocity.x;
-    this.y += this.velocity.y;
-
-    // 应用摩擦力
-    this.velocity.x *= this.friction;
-    this.velocity.y *= this.friction;
-
-    // 碰撞检测 - 边界
-    if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
-      this.velocity.x = -this.velocity.x;
-    }
-    if (this.y + this.radius > canvas.height || this.y - this.radius < 0) {
-      this.velocity.y = -this.velocity.y;
-    }
-  }
-
-  // 添加碰撞检测方法
-  collideWith(otherBall) {
-    const dx = this.x - otherBall.x;
-    const dy = this.y - otherBall.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (distance < this.radius + otherBall.radius) {
-      // 计算碰撞角度
-      const angle = Math.atan2(dy, dx);
-      const sin = Math.sin(angle);
-      const cos = Math.cos(angle);
-
-      // 旋转速度向量
-      const rotateVelocities = (velocity, sin, cos) => {
-        return {
-          x: velocity.x * cos + velocity.y * sin,
-          y: velocity.y * cos - velocity.x * sin,
-        };
-      };
-
-      // 旋转回原来的角度
-      const rotateBack = (velocity, sin, cos) => {
-        return {
-          x: velocity.x * cos - velocity.y * sin,
-          y: velocity.y * cos + velocity.x * sin,
-        };
-      };
-
-      // 旋转球的位置和速度
-      const rotatedVelocities = {
-        this: rotateVelocities(this.velocity, sin, cos),
-        other: rotateVelocities(otherBall.velocity, sin, cos),
-      };
-
-      // 碰撞后的速度（完全弹性碰撞）
-      const finalVelocities = {
-        this: { x: rotatedVelocities.other.x, y: rotatedVelocities.this.y },
-        other: { x: rotatedVelocities.this.x, y: rotatedVelocities.other.y },
-      };
-
-      // 旋转回原来的角度
-      this.velocity = rotateBack(finalVelocities.this, sin, cos);
-      otherBall.velocity = rotateBack(finalVelocities.other, sin, cos);
-
-      // 防止球重叠
-      const overlap = (this.radius + otherBall.radius - distance) / 2;
-      const pushX = overlap * Math.cos(angle);
-      const pushY = overlap * Math.sin(angle);
-
-      this.x += pushX;
-      this.y += pushY;
-      otherBall.x -= pushX;
-      otherBall.y -= pushY;
-
-      // 增加一些能量损失
-      this.velocity.x *= 0.95;
-      this.velocity.y *= 0.95;
-      otherBall.velocity.x *= 0.95;
-      otherBall.velocity.y *= 0.95;
-    }
-  }
-}
-
-// 在 Ball 类后添加 Pocket（球洞）类
-class Pocket {
-  constructor(x, y, radius) {
-    this.x = x;
-    this.y = y;
-    this.radius = radius;
-  }
-
-  draw(ctx) {
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = "#000000";
-    ctx.fill();
-    ctx.closePath();
-  }
-
-  checkBall(ball) {
-    const dx = this.x - ball.x;
-    const dy = this.y - ball.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    return distance < this.radius;
-  }
-}
-
-// 在 Ball 类后添加 Cue（球杆）类
-class Cue {
-  constructor() {
-    this.length = 150; // 球杆长度
-    this.width = 4; // 球杆宽度
-    this.color = "#8B4513"; // 球杆颜色
-  }
-
-  draw(ctx, ballX, ballY, mouseX, mouseY) {
-    const angle = Math.atan2(mouseY - ballY, mouseX - ballX);
-
-    // 如果正在拉动球杆，计算力度
-    let pullDistance = 0;
-    if (isPulling) {
-      const dx = pullStartX - mouseX;
-      const dy = pullStartY - mouseY;
-      pullDistance = Math.min(Math.sqrt(dx * dx + dy * dy), 100);
+  // 在 Ball 类后添加 Pocket（球洞）类
+  class Pocket {
+    constructor(x, y, radius) {
+      this.x = x;
+      this.y = y;
+      this.radius = radius;
     }
 
-    // 计算球杆起点（从白球后方开始）
-    const startX = ballX - Math.cos(angle) * (20 + pullDistance);
-    const startY = ballY - Math.sin(angle) * (20 + pullDistance);
+    draw(ctx) {
+      // 绘制球袋阴影
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius + 2, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+      ctx.fill();
 
-    // 计算球杆终点
-    const endX = startX - Math.cos(angle) * this.length;
-    const endY = startY - Math.sin(angle) * this.length;
+      // 绘制球袋
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = "#000000";
+      ctx.fill();
 
-    // 绘制瞄准线
-    if (!isPulling) {
-      this.drawAimLine(ctx, ballX, ballY, mouseX, mouseY);
+      // 绘制球袋内部
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius * 0.8, 0, Math.PI * 2);
+      ctx.fillStyle = "#1a1a1a";
+      ctx.fill();
     }
 
-    // 绘制球杆
-    ctx.beginPath();
-    ctx.moveTo(startX, startY);
-    ctx.lineTo(endX, endY);
-    ctx.lineWidth = this.width;
-    ctx.strokeStyle = this.color;
-    ctx.stroke();
+    checkBall(ball) {
+      if (ball.pocketed) return false;
 
-    // 绘制球杆头部
-    ctx.beginPath();
-    ctx.arc(startX, startY, this.width / 2, 0, Math.PI * 2);
-    ctx.fillStyle = "#F4A460";
-    ctx.fill();
+      const dx = this.x - ball.x;
+      const dy = this.y - ball.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < this.radius) {
+        ball.pocketed = true;
+        if (ball.number > 0) {
+          gameState.score += ball.number;
+          gameState.remainingBalls--;
+          document.getElementById("score").textContent = gameState.score;
+          document.getElementById("remaining-balls").textContent =
+            gameState.remainingBalls;
+        }
+        return true;
+      }
+      return false;
+    }
   }
 
-  drawAimLine(ctx, ballX, ballY, mouseX, mouseY) {
-    const maxBounces = 1; // 最多反弹次数
-    let currentX = ballX;
-    let currentY = ballY;
-    let angle = Math.atan2(mouseY - ballY, mouseX - ballX);
-    let dx = Math.cos(angle);
-    let dy = Math.sin(angle);
+  // 在 Ball 类后添加 Cue（球杆）类
+  class Cue {
+    constructor() {
+      this.length = 150;
+      this.width = 4;
+      this.power = 0;
+      this.maxPower = 20;
+      this.powerStep = 1; // 每次按键改变的力度值
+    }
 
-    ctx.beginPath();
-    ctx.moveTo(currentX, currentY);
-    ctx.setLineDash([5, 5]);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
+    draw(ctx, ballX, ballY, mouseX, mouseY) {
+      if (gameState.status !== "aiming") return;
 
-    for (let bounce = 0; bounce <= maxBounces; bounce++) {
-      let nextX = currentX;
-      let nextY = currentY;
-      let hitBorder = false;
+      // 计算角度
+      const angle = Math.atan2(mouseY - ballY, mouseX - ballX);
 
-      // 计算射线直到击中边界或其他球
-      while (
-        !hitBorder &&
-        nextX >= 0 &&
-        nextX <= canvas.width &&
-        nextY >= 0 &&
-        nextY <= canvas.height
-      ) {
-        nextX += dx * 5;
-        nextY += dy * 5;
+      // 使用键盘控制的力度或鼠标拖动的力度
+      const currentPower = gameState.isPulling
+        ? this.power
+        : gameState.keyPower;
 
-        // 检查是否击中其他球
-        for (const ball of balls) {
-          if (ball !== whiteBall) {
-            const ballDx = nextX - ball.x;
-            const ballDy = nextY - ball.y;
-            const distance = Math.sqrt(ballDx * ballDx + ballDy * ballDy);
-            if (distance < ball.radius) {
-              hitBorder = true;
+      // 计算球杆位置
+      const pullDistance = currentPower * 5;
+      const startX = ballX - Math.cos(angle) * (20 + pullDistance);
+      const startY = ballY - Math.sin(angle) * (20 + pullDistance);
+      const endX = startX - Math.cos(angle) * this.length;
+      const endY = startY - Math.sin(angle) * this.length;
+
+      // 绘制瞄准线
+      ctx.beginPath();
+      ctx.moveTo(ballX, ballY);
+      ctx.lineTo(ballX + Math.cos(angle) * 200, ballY + Math.sin(angle) * 200);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.setLineDash([5, 5]);
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 绘制球杆
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.lineTo(endX, endY);
+
+      // 创建球杆渐变
+      const gradient = ctx.createLinearGradient(startX, startY, endX, endY);
+      gradient.addColorStop(0, "#8B4513");
+      gradient.addColorStop(0.2, "#D2691E");
+      gradient.addColorStop(0.8, "#8B4513");
+      gradient.addColorStop(1, "#654321");
+
+      ctx.lineWidth = this.width;
+      ctx.strokeStyle = gradient;
+      ctx.stroke();
+
+      // 绘制球杆头部
+      ctx.beginPath();
+      ctx.arc(startX, startY, this.width / 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = "#F4A460";
+      ctx.fill();
+
+      // 更新力度条
+      const powerFill = document.getElementById("power-fill");
+      if (powerFill) {
+        powerFill.style.width = `${(currentPower / this.maxPower) * 100}%`;
+      }
+    }
+  }
+
+  // 球的配置
+  const ballsConfig = [
+    { color: "yellow", number: 1 },
+    { color: "blue", number: 2 },
+    { color: "red", number: 3 },
+    { color: "purple", number: 4 },
+    { color: "orange", number: 5 },
+    { color: "green", number: 6 },
+    { color: "maroon", number: 7 },
+    { color: "black", number: 8 },
+    { color: "yellow", number: 9 },
+    { color: "blue", number: 10 },
+    { color: "red", number: 11 },
+    { color: "purple", number: 12 },
+    { color: "orange", number: 13 },
+    { color: "green", number: 14 },
+    { color: "maroon", number: 15 },
+  ];
+
+  // 创建所有球的数组
+  const balls = [];
+  const pockets = [];
+  const pocketRadius = 25;
+
+  // 创建白球（母球）
+  const whiteBall = new Ball(
+    canvas.width / 4,
+    canvas.height / 2,
+    12,
+    "white",
+    0
+  );
+  balls.push(whiteBall);
+
+  // 创建六个球洞
+  const pocketOffset = 35;
+  pockets.push(new Pocket(pocketOffset, pocketOffset, pocketRadius)); // 左上
+  pockets.push(
+    new Pocket(pocketOffset, canvas.height - pocketOffset, pocketRadius)
+  ); // 左下
+  pockets.push(new Pocket(canvas.width / 2, pocketOffset, pocketRadius)); // 上中
+  pockets.push(
+    new Pocket(canvas.width / 2, canvas.height - pocketOffset, pocketRadius)
+  ); // 下中
+  pockets.push(
+    new Pocket(canvas.width - pocketOffset, pocketOffset, pocketRadius)
+  ); // 右上
+  pockets.push(
+    new Pocket(
+      canvas.width - pocketOffset,
+      canvas.height - pocketOffset,
+      pocketRadius
+    )
+  ); // 右下
+
+  // 修改球的排列方法
+  function createTriangle() {
+    const startX = canvas.width * 0.75;
+    const startY = canvas.height / 2;
+    const spacing = 25;
+    const rows = 5;
+    let ballIndex = 0;
+
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col <= row; col++) {
+        if (ballIndex >= ballsConfig.length) break;
+
+        const x = startX + row * spacing * Math.cos(Math.PI / 6);
+        const y = startY + (col - row / 2) * spacing;
+
+        balls.push(
+          new Ball(
+            x,
+            y,
+            12,
+            ballsConfig[ballIndex].color,
+            ballsConfig[ballIndex].number
+          )
+        );
+
+        ballIndex++;
+      }
+    }
+  }
+
+  // 创建三角形排列的球
+  createTriangle();
+
+  // 创建球杆
+  const cue = new Cue();
+
+  // 添加键盘事件监听
+  window.addEventListener("keydown", (e) => {
+    if (gameState.status !== "aiming" || gameState.isPulling) return;
+
+    switch (e.key) {
+      case "ArrowUp":
+        gameState.keyPower = Math.min(
+          gameState.keyPower + cue.powerStep,
+          cue.maxPower
+        );
+        break;
+      case "ArrowDown":
+        gameState.keyPower = Math.max(gameState.keyPower - cue.powerStep, 0);
+        break;
+      case " ": // 空格键击球
+      case "Enter": // 添加Enter键击球
+        if (
+          gameState.status === "aiming" &&
+          Math.abs(whiteBall.velocity.x) < MIN_SPEED &&
+          Math.abs(whiteBall.velocity.y) < MIN_SPEED
+        ) {
+          const angle = Math.atan2(mouseY - whiteBall.y, mouseX - whiteBall.x);
+          const power = gameState.keyPower * 2;
+          whiteBall.velocity.x = Math.cos(angle) * power;
+          whiteBall.velocity.y = Math.sin(angle) * power;
+          gameState.status = "shooting";
+          gameState.keyPower = 0;
+        }
+        break;
+    }
+  });
+
+  // 修改鼠标按下事件，清除键盘力度
+  canvas.addEventListener("mousedown", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+
+    // 只有在瞄准状态且白球静止时才能击球
+    if (
+      gameState.status === "aiming" &&
+      Math.abs(whiteBall.velocity.x) < MIN_SPEED &&
+      Math.abs(whiteBall.velocity.y) < MIN_SPEED
+    ) {
+      gameState.isPulling = true;
+      gameState.pullStartX = mouseX;
+      gameState.pullStartY = mouseY;
+      gameState.keyPower = 0; // 清除键盘力度
+    }
+  });
+
+  canvas.addEventListener("mousemove", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+
+    // 更新球杆力度
+    if (gameState.isPulling && gameState.status === "aiming") {
+      const dx = gameState.pullStartX - mouseX;
+      const dy = gameState.pullStartY - mouseY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      cue.power = Math.min(distance / 10, cue.maxPower);
+    }
+  });
+
+  canvas.addEventListener("mouseup", (e) => {
+    if (!gameState.isPulling || gameState.status !== "aiming") return;
+
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+
+    // 计算击球方向和力度
+    const dx = gameState.pullStartX - mouseX;
+    const dy = gameState.pullStartY - mouseY;
+    const angle = Math.atan2(dy, dx);
+    const power = cue.power * 2; // 增加力度倍数使击球更明显
+
+    // 根据拉动方向设置球的速度
+    whiteBall.velocity.x = Math.cos(angle) * power;
+    whiteBall.velocity.y = Math.sin(angle) * power;
+
+    // 更新游戏状态
+    gameState.status = "shooting";
+    gameState.isPulling = false;
+    cue.power = 0;
+  });
+
+  // 修改游戏循环
+  function gameLoop() {
+    // 清除画布
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 绘制背景
+    ctx.fillStyle = "#076324";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 绘制球洞
+    pockets.forEach((pocket) => pocket.draw(ctx));
+
+    // 更新和绘制所有球
+    let allBallsStopped = true;
+
+    for (let i = balls.length - 1; i >= 0; i--) {
+      const ball = balls[i];
+
+      if (!ball.pocketed) {
+        ball.update();
+
+        // 检查球是否在运动
+        if (
+          Math.abs(ball.velocity.x) > MIN_SPEED ||
+          Math.abs(ball.velocity.y) > MIN_SPEED
+        ) {
+          allBallsStopped = false;
+        }
+
+        // 检查是否进袋
+        for (const pocket of pockets) {
+          if (pocket.checkBall(ball)) {
+            if (ball !== whiteBall) {
+              if (ball.number === 8) {
+                gameState.status = "gameover";
+                gameState.score += 50;
+              }
+              balls.splice(i, 1);
               break;
+            } else {
+              // 白球进袋处理
+              whiteBall.x = canvas.width / 4;
+              whiteBall.y = canvas.height / 2;
+              whiteBall.velocity = { x: 0, y: 0 };
+              whiteBall.pocketed = false;
+              gameState.score = Math.max(0, gameState.score - 10);
             }
           }
         }
 
-        // 检查是否击中边界
-        if (nextX <= 0 || nextX >= canvas.width) {
-          dx = -dx;
-          hitBorder = true;
-        }
-        if (nextY <= 0 || nextY >= canvas.height) {
-          dy = -dy;
-          hitBorder = true;
-        }
-      }
+        // 绘制球
+        ball.draw(ctx);
 
-      ctx.lineTo(nextX, nextY);
-      currentX = nextX;
-      currentY = nextY;
-
-      if (!hitBorder) break;
-    }
-
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
-}
-
-// 获取画布和上下文
-const canvas = document.getElementById("gameCanvas");
-if (!canvas) {
-  debug("找不到画布元素！");
-  throw new Error("Canvas not found");
-}
-
-const ctx = canvas.getContext("2d");
-if (!ctx) {
-  debug("无法获取画布上下文！");
-  throw new Error("Cannot get canvas context");
-}
-
-// 设置球的布局参数
-const startX = canvas.width - 250; // 从右侧开始排列
-const startY = canvas.height / 2;
-const spacing = 30; // 减小球之间的间距
-
-// 创建所有球的数组
-const balls = [];
-
-// 创建白球（母球）
-const whiteBall = new Ball(200, canvas.height / 2, 15, "white", 0);
-balls.push(whiteBall);
-
-// 在创建球之前添加球洞数组
-const pockets = [];
-const pocketRadius = 25;
-
-// 创建六个球洞
-// 左上
-pockets.push(new Pocket(0, 0, pocketRadius));
-// 左下
-pockets.push(new Pocket(0, canvas.height, pocketRadius));
-// 上中
-pockets.push(new Pocket(canvas.width / 2, 0, pocketRadius));
-// 下中
-pockets.push(new Pocket(canvas.width / 2, canvas.height, pocketRadius));
-// 右上
-pockets.push(new Pocket(canvas.width, 0, pocketRadius));
-// 右下
-pockets.push(new Pocket(canvas.width, canvas.height, pocketRadius));
-
-// 修改球的颜色和编号
-const ballsConfig = [
-  { color: "yellow", number: 1 },
-  { color: "blue", number: 2 },
-  { color: "red", number: 3 },
-  { color: "purple", number: 4 },
-  { color: "orange", number: 5 },
-  { color: "green", number: 6 },
-  { color: "maroon", number: 7 },
-  { color: "black", number: 8 },
-  { color: "yellow", number: 9 },
-  { color: "blue", number: 10 },
-  { color: "red", number: 11 },
-  { color: "purple", number: 12 },
-  { color: "orange", number: 13 },
-  { color: "green", number: 14 },
-  { color: "maroon", number: 15 },
-];
-
-// 修改球的排列方法
-function createTriangle() {
-  const rows = 5; // 5行三角形排列
-  let ballIndex = 0;
-
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col <= row; col++) {
-      if (ballIndex >= ballsConfig.length) break;
-
-      const x = startX + row * spacing * Math.cos(Math.PI / 6);
-      const y = startY + (col - row / 2) * spacing;
-
-      balls.push(
-        new Ball(
-          x,
-          y,
-          15,
-          ballsConfig[ballIndex].color,
-          ballsConfig[ballIndex].number
-        )
-      );
-
-      ballIndex++;
-    }
-  }
-}
-
-// 创建三角形排列的球
-createTriangle();
-
-// 在创建白球后添加球杆实例
-const cue = new Cue();
-
-// 添加全局变量
-let isAiming = false;
-let isPulling = false;
-let pullStartX = 0;
-let pullStartY = 0;
-
-// 添加分数变量
-let score = 0;
-
-// 添加游戏状态变量
-let gameOver = false;
-
-// 修改鼠标事件处理
-canvas.addEventListener("mousedown", (e) => {
-  const rect = canvas.getBoundingClientRect();
-  mouseX = e.clientX - rect.left;
-  mouseY = e.clientY - rect.top;
-
-  // 只有当所有球都静止时才能击球
-  if (
-    balls.every(
-      (ball) =>
-        Math.abs(ball.velocity.x) < 0.01 && Math.abs(ball.velocity.y) < 0.01
-    )
-  ) {
-    isAiming = true;
-    isPulling = true;
-    pullStartX = mouseX;
-    pullStartY = mouseY;
-  }
-});
-
-canvas.addEventListener("mousemove", (e) => {
-  const rect = canvas.getBoundingClientRect();
-  mouseX = e.clientX - rect.left;
-  mouseY = e.clientY - rect.top;
-});
-
-canvas.addEventListener("mouseup", (e) => {
-  if (!isPulling) return;
-
-  const rect = canvas.getBoundingClientRect();
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
-
-  // 计算击球方向（从白球指向鼠标的方向）
-  const dx = mouseX - whiteBall.x;
-  const dy = mouseY - whiteBall.y;
-  const distance = Math.sqrt(dx * dx + dy * dy);
-
-  if (distance > 0) {
-    // 设置击球速度（方向与瞄准方向相同）
-    const maxSpeed = 20;
-    const speed = Math.min((distance / 50) * 15, maxSpeed);
-
-    whiteBall.velocity.x = (dx / distance) * speed; // 删除负号
-    whiteBall.velocity.y = (dy / distance) * speed; // 删除负号
-  }
-
-  // 重置状态
-  isAiming = false;
-  isPulling = false;
-});
-
-// 修改游戏循环，添加球杆和瞄准线的绘制
-function gameLoop() {
-  // 清除画布
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // 绘制背景
-  ctx.fillStyle = "#076324";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // 绘制球洞
-  pockets.forEach((pocket) => pocket.draw(ctx));
-
-  // 更新和绘制所有球
-  for (let i = balls.length - 1; i >= 0; i--) {
-    balls[i].update();
-
-    // 检查是否有球进洞
-    let pocketed = false;
-    for (const pocket of pockets) {
-      if (pocket.checkBall(balls[i])) {
-        if (balls[i] !== whiteBall) {
-          // 检查是否是黑球（8号球）
-          if (balls[i].number === 8) {
-            // 如果是黑球，游戏结束
-            gameOver = true;
-            score += 50; // 额外加分
-          } else {
-            // 如果不是黑球，正常加分
-            score += balls[i].number;
+        // 检查碰撞
+        for (let j = i - 1; j >= 0; j--) {
+          if (!balls[j].pocketed) {
+            ball.collideWith(balls[j]);
           }
-          balls.splice(i, 1);
-          pocketed = true;
-          break;
-        } else {
-          // 白球进洞的处理保持不变
-          whiteBall.x = 200;
-          whiteBall.y = canvas.height / 2;
-          whiteBall.velocity = { x: 0, y: 0 };
-          score = Math.max(0, score - 10);
         }
       }
     }
 
-    if (!pocketed) {
-      balls[i].draw(ctx);
-      // 检查与其他球的碰撞
-      for (let j = i - 1; j >= 0; j--) {
-        balls[i].collideWith(balls[j]);
-      }
+    // 如果所有球都停止，切换回瞄准状态
+    if (allBallsStopped && gameState.status === "shooting") {
+      gameState.status = "aiming";
     }
+
+    // 在瞄准状态下绘制球杆
+    if (gameState.status === "aiming" && !whiteBall.pocketed) {
+      cue.draw(ctx, whiteBall.x, whiteBall.y, mouseX, mouseY);
+    }
+
+    // 处理游戏结束状态
+    if (gameState.status === "gameover") {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "white";
+      ctx.font = "48px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("游戏结束!", canvas.width / 2, canvas.height / 2 - 30);
+      ctx.fillText(
+        `最终得分: ${gameState.score}`,
+        canvas.width / 2,
+        canvas.height / 2 + 30
+      );
+      return;
+    }
+
+    requestAnimationFrame(gameLoop);
   }
 
-  // 在所有球绘制完成后，检查是否所有球都静止
-  const allBallsStopped = balls.every(
-    (ball) =>
-      Math.abs(ball.velocity.x) < 0.01 && Math.abs(ball.velocity.y) < 0.01
-  );
+  // 启动游戏
+  gameLoop();
 
-  // 如果所有球都静止且没有在击球，绘制球杆和瞄准线
-  if (allBallsStopped && !isAiming) {
-    cue.drawAimLine(ctx, whiteBall.x, whiteBall.y, mouseX, mouseY);
-    cue.draw(ctx, whiteBall.x, whiteBall.y, mouseX, mouseY);
-  }
-
-  // 绘制分数
-  ctx.fillStyle = "white";
-  ctx.font = "24px Arial";
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
-  ctx.fillText(`得分: ${score}`, 20, 20);
-
-  // 在游戏循环末尾添加游戏结束的显示
-  if (gameOver) {
-    // 绘制游戏结束文字
-    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = "white";
-    ctx.font = "48px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("游戏结束!", canvas.width / 2, canvas.height / 2 - 30);
-    ctx.fillText(
-      `最终得分: ${score}`,
-      canvas.width / 2,
-      canvas.height / 2 + 30
-    );
-
-    // 停止游戏循环
-    return;
-  }
-
-  requestAnimationFrame(gameLoop);
-}
-
-// 启动游戏
-gameLoop();
-
-// 添加加载完成提示
-debug("游戏已启动！");
+  // 添加加载完成提示
+  debug("游戏已启动！");
+};
