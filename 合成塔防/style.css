@@ -1,0 +1,791 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(135deg, #1a1c20 0%, #2c3e50 100%);
+  min-height: 100vh;
+  padding: 20px;
+  color: #fff;
+}
+
+.game-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  padding: 25px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.game-board {
+  width: 100%;
+  height: 500px;
+  background: linear-gradient(to bottom, #2c3e50, #34495e);
+  position: relative;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.3);
+}
+
+.tower-slots {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  gap: 12px;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+  justify-content: center;
+  align-content: center;
+}
+
+.grid-cell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tower-slot {
+  width: 54px;
+  height: 54px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(5px);
+  position: relative;
+  overflow: hidden;
+}
+
+.tower-slot:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.tower {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s;
+  z-index: 3;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.tower:hover {
+  transform: scale(1.1);
+}
+
+.tower::after {
+  content: attr(data-level);
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  font-size: 12px;
+}
+
+.path {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.05) 10%,
+    rgba(255, 255, 255, 0.05) 90%,
+    transparent
+  );
+  transform: translateY(-50%);
+  z-index: 1;
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.enemy {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  transition: all 0.1s linear;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.enemy-icon {
+  font-size: 32px;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.health-bar {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  background-color: rgba(231, 76, 60, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.health-bar-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(to right, #2ecc71, #27ae60);
+  transition: width 0.2s;
+}
+
+.bullet {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+}
+
+.bullet.tesla {
+  background: #9b59b6;
+  box-shadow: 0 0 10px #9b59b6;
+  animation: tesla-spark 0.3s infinite;
+}
+
+.bullet.poison {
+  background: #27ae60;
+  box-shadow: 0 0 10px #27ae60;
+  animation: poison-drip 1s infinite;
+}
+
+.bullet.ninja {
+  background: #34495e;
+  box-shadow: 0 0 10px #34495e;
+  animation: ninja-star-spin 0.5s infinite linear;
+}
+
+@keyframes tesla-spark {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+}
+
+@keyframes poison-drip {
+  0% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2) rotate(180deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(360deg);
+  }
+}
+
+@keyframes ninja-star-spin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.tower-icon {
+  font-size: 24px;
+  z-index: 2;
+}
+
+.tower-range {
+  position: absolute;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.tower:hover .tower-range {
+  opacity: 1;
+}
+
+.hit-effect {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  transform: translate(-50%, -50%);
+  animation: hit-animation 0.3s ease-out forwards;
+  z-index: 4;
+}
+
+@keyframes hit-animation {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+/* 修改塔选择面板样式 */
+.tower-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 15px;
+}
+
+.tower-option {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(5px);
+  color: white;
+  position: relative;
+  overflow: visible;
+  z-index: 1;
+}
+
+.tower-option::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tower-option:hover::before {
+  opacity: 1;
+}
+
+.tower-option:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  z-index: 10;
+}
+
+.tower-option.selected {
+  border-color: #3498db;
+  background: rgba(52, 152, 219, 0.2);
+  box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
+}
+
+.tower-option .tower-icon {
+  font-size: 28px;
+  margin-bottom: 6px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.tower-option .tower-name {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.tower-option .skill-info {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.tower-option .cost {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.tower-option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.tower-option.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.tower-option.disabled .cost {
+  color: #e74c3c;
+}
+
+/* 添加子弹特效样式 */
+.bullet.arrow {
+  width: 12px;
+  height: 4px;
+  background: none;
+  border-left: 12px solid currentColor;
+  border-top: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+}
+
+.bullet.magic {
+  animation: magic-pulse 0.5s infinite;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.bullet.cannonball {
+  width: 12px;
+  height: 12px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes magic-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* 添加技能按钮样式 */
+.skill-button {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 6px;
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #666;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.tower:hover .skill-button {
+  opacity: 1;
+}
+
+.skill-button.cooldown {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* 添加爆炸效果 */
+.explosion {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(
+    circle,
+    rgba(231, 76, 60, 0.8) 0%,
+    rgba(231, 76, 60, 0) 70%
+  );
+  transform: translate(-50%, -50%);
+  animation: explosion 1s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes explosion {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+
+/* 添加倒计时样式 */
+.countdown {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 120px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: countdown-pulse 1s infinite;
+}
+
+@keyframes countdown-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* 修改开始按钮样式 */
+#start-game {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+}
+
+#start-game:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(46, 204, 113, 0.4);
+}
+
+#start-game:disabled {
+  background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 添加波次提示样式 */
+.wave-announcement {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 18px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 1000;
+}
+
+.wave-announcement.show {
+  opacity: 1;
+}
+
+/* 修改控制面板样式 */
+.control-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.score,
+.lives,
+.money {
+  font-size: 20px;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.score::before {
+  content: "🎯";
+}
+
+.lives::before {
+  content: "❤️";
+}
+
+.money::before {
+  content: "💰";
+}
+
+/* 添加游戏结束屏幕样式 */
+.game-over {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  z-index: 1000;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.game-over h2 {
+  font-size: 32px;
+  margin-bottom: 20px;
+  color: #e74c3c;
+}
+
+.game-over p {
+  font-size: 18px;
+  margin: 10px 0;
+}
+
+#restart-game {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 18px;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+#restart-game:hover {
+  background-color: #27ae60;
+  transform: translateY(-2px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 为不同类型的怪物添加动画效果 */
+.enemy .enemy-icon {
+  animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Boss怪物特效 */
+.enemy[data-type="boss"] .enemy-icon {
+  animation: boss-float 1s ease-in-out infinite;
+  filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5));
+}
+
+@keyframes boss-float {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.enemy-death {
+  animation: fadeOut 0.2s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
+/* 添加闪电效果 */
+.lightning {
+  position: absolute;
+  height: 4px;
+  background: linear-gradient(to right, #9b59b6, #8e44ad);
+  transform-origin: left center;
+  filter: drop-shadow(0 0 10px rgba(155, 89, 182, 0.8));
+  animation: lightning-flash 0.2s linear;
+  z-index: 5;
+}
+
+@keyframes lightning-flash {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 添加毒云效果 */
+.poison-cloud {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle,
+    rgba(39, 174, 96, 0.4) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  animation: poison-pulse 2s infinite ease-in-out;
+  z-index: 4;
+}
+
+@keyframes poison-pulse {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.6;
+  }
+}
+
+/* 添加忍者分身效果 */
+.ninja-shadow {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  transform: translate(-50%, -50%);
+  background: rgba(52, 73, 94, 0.8);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: ninja-appear 1s ease-out;
+  z-index: 3;
+}
+
+.ninja-shadow::after {
+  content: "🥷";
+  font-size: 24px;
+  filter: brightness(0.7);
+}
+
+@keyframes ninja-appear {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+/* 修改范围指示器的样式 */
+.tower-slot .tower-range {
+  display: none;
+}
+
+/* 只在有塔的情况下显示范围指示器 */
+.tower-slot .tower:hover .tower-range {
+  display: block;
+  opacity: 0.3;
+}
+
+/* 隐藏塔选择面板中的特效 */
+.tower-selection .tower-range,
+.tower-selection .skill-button {
+  display: none !important;
+}
+
+/* 调整塔选择面板中的悬停效果 */
+.tower-option:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  z-index: 10;
+}

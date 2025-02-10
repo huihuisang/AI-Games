@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>合成塔防</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="game-container">
+      <!-- 把塔选择面板移到 game-board 前面 -->
+      <div class="tower-selection">
+        <div class="tower-option selected" data-type="archer">
+          <span class="tower-icon">🏹</span>
+          <div>弓箭手</div>
+          <div class="cost">50金币</div>
+        </div>
+        <div class="tower-option" data-type="mage">
+          <span class="tower-icon">🔮</span>
+          <div>法师</div>
+          <div class="cost">100金币</div>
+        </div>
+        <div class="tower-option" data-type="cannon">
+          <span class="tower-icon">💣</span>
+          <div>炮塔</div>
+          <div class="cost">150金币</div>
+        </div>
+      </div>
+
+      <!-- 游戏区域 -->
+      <div class="game-board">
+        <!-- 防御塔放置区域 -->
+        <div class="tower-slots"></div>
+        <!-- 怪物行进路径 -->
+        <div class="path"></div>
+      </div>
+
+      <!-- 游戏控制区域 -->
+      <div class="control-panel">
+        <div class="score">分数: <span id="score">0</span></div>
+        <div class="lives">生命: <span id="lives">5</span></div>
+        <div class="money">金币: <span id="money">100</span></div>
+        <button id="start-game">开始游戏</button>
+      </div>
+    </div>
+    <script src="game.js"></script>
+  </body>
+</html>
