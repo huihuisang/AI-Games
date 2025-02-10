@@ -996,7 +996,32 @@ class Game {
   }
 }
 
-// 启动游戏
-window.onload = () => {
-  const game = new Game();
-};
+// 修改底部的初始化代码
+let game;
+
+// 处理加载动画
+function handleLoading() {
+  // 确保所有资源加载完成
+  window.addEventListener("load", () => {
+    document.body.classList.add("loaded");
+
+    setTimeout(() => {
+      const loadingScreen = document.querySelector(".loading-screen");
+      if (loadingScreen) {
+        loadingScreen.style.opacity = "0";
+        setTimeout(() => loadingScreen.remove(), 300);
+      }
+
+      const gameContainer = document.querySelector(".game-container");
+      if (gameContainer) {
+        gameContainer.classList.add("loaded");
+      }
+    }, 500);
+  });
+}
+
+// DOM加载完成后初始化游戏
+document.addEventListener("DOMContentLoaded", () => {
+  game = new Game();
+  handleLoading();
+});

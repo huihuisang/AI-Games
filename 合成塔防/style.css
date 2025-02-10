@@ -10,6 +10,11 @@ body {
   min-height: 100vh;
   padding: 20px;
   color: #fff;
+  visibility: hidden;
+}
+
+body.loaded {
+  visibility: visible;
 }
 
 .game-container {
@@ -788,4 +793,10 @@ body {
   border-color: rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.1);
   z-index: 10;
+}
+
+/* 在文件开头添加 */
+.loading-screen {
+  visibility: visible !important;
+  transition: opacity 0.3s ease;
 }
