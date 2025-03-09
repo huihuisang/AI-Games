@@ -1,0 +1,194 @@
+:root {
+  --board-size: min(80vh, 600px);
+  --square-size: calc(var(--board-size) / 8);
+  --light-square: #f0d9b5;
+  --dark-square: #b58863;
+  --highlight: rgba(255, 255, 0, 0.4);
+  --possible-move: rgba(0, 255, 0, 0.3);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #2f3542;
+}
+
+.game-container {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.game-info {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.player-turn {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #2f3542;
+}
+
+.captured-pieces {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.captured {
+  min-height: 50px;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background: #f1f2f6;
+}
+
+.chessboard {
+  display: grid;
+  grid-template-columns: repeat(8, var(--square-size));
+  grid-template-rows: repeat(8, var(--square-size));
+  border: 2px solid #2f3542;
+  width: var(--board-size);
+  height: var(--board-size);
+}
+
+.square {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: calc(var(--square-size) * 0.7);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.square.light {
+  background-color: var(--light-square);
+}
+
+.square.dark {
+  background-color: var(--dark-square);
+}
+
+.square.selected {
+  background-color: var(--highlight);
+}
+
+.square.possible-move {
+  background-color: var(--possible-move);
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: #2f3542;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+button:hover {
+  background: #3742fa;
+  transform: translateY(-2px);
+}
+
+/* 棋子样式 */
+.piece {
+  width: 90%;
+  height: 90%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: relative;
+  cursor: grab;
+}
+
+.piece:active {
+  cursor: grabbing;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  :root {
+    --board-size: min(90vw, 80vh);
+  }
+
+  .game-container {
+    padding: 1rem;
+  }
+}
+
+/* 兵升变对话框样式 */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.modal-content h2 {
+  margin-bottom: 1rem;
+  color: #2f3542;
+}
+
+.promotion-choices {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.promotion-piece {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.5rem;
+  background: #f0d9b5;
+  border: 2px solid #b58863;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.promotion-piece:hover {
+  transform: translateY(-5px);
+  background: #e4c496;
+}

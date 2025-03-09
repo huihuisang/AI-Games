@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>国际象棋</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="game-container">
+      <div class="game-info">
+        <div class="player-turn">
+          <span id="current-player">白方回合</span>
+        </div>
+        <div class="captured-pieces">
+          <div id="white-captured" class="captured white"></div>
+          <div id="black-captured" class="captured black"></div>
+        </div>
+      </div>
+
+      <div class="chessboard" id="chessboard">
+        <!-- 棋盘将通过 JavaScript 动态生成 -->
+      </div>
+
+      <div class="controls">
+        <button id="restart-btn">重新开始</button>
+        <button id="undo-btn">悔棋</button>
+      </div>
+    </div>
+
+    <!-- 兵升变选择对话框 -->
+    <div id="promotion-modal" class="modal">
+      <div class="modal-content">
+        <h2>选择升变的棋子</h2>
+        <div class="promotion-choices">
+          <div class="promotion-piece" data-piece="q" title="后">♕</div>
+          <div class="promotion-piece" data-piece="r" title="车">♖</div>
+          <div class="promotion-piece" data-piece="b" title="象">♗</div>
+          <div class="promotion-piece" data-piece="n" title="马">♘</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

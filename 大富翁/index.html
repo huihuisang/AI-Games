@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>大富翁 - 网页版</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="game-container">
+      <!-- 游戏开始界面 -->
+      <div id="start-screen" class="screen">
+        <h1>大富翁</h1>
+        <div class="player-setup">
+          <h2>选择玩家数量</h2>
+          <select id="player-count">
+            <option value="1">单人游戏</option>
+            <option value="2">2名玩家</option>
+            <option value="3">3名玩家</option>
+            <option value="4">4名玩家</option>
+          </select>
+          <button id="start-game">开始游戏</button>
+        </div>
+      </div>
+
+      <!-- 游戏主界面 -->
+      <div id="game-screen" class="screen hidden">
+        <!-- 游戏棋盘 -->
+        <div id="game-board">
+          <canvas id="board-canvas"></canvas>
+        </div>
+
+        <!-- 游戏信息面板 -->
+        <div id="game-info">
+          <!-- 玩家信息 -->
+          <div id="players-info"></div>
+
+          <!-- 骰子区域 -->
+          <div id="dice-area">
+            <div id="dice">1</div>
+            <button id="roll-dice" disabled>投掷骰子</button>
+          </div>
+
+          <!-- 操作按钮 -->
+          <div id="action-buttons">
+            <button id="buy-property" disabled>购买房产</button>
+            <button id="build-house" disabled>建造房屋</button>
+            <button id="end-turn" disabled>结束回合</button>
+          </div>
+
+          <!-- 游戏消息区 -->
+          <div id="message-box"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 加载游戏脚本 -->
+    <script src="board.js"></script>
+    <script src="cards.js"></script>
+    <script src="player.js"></script>
+    <script src="game.js"></script>
+    <script>
+      // 等待所有资源加载完成后初始化游戏
+      window.addEventListener("load", function () {
+        try {
+          console.log("正在初始化游戏...");
+          window.game = new MonopolyGame();
+          console.log("游戏初始化完成");
+        } catch (error) {
+          console.error("游戏初始化失败:", error);
+        }
+      });
+    </script>
+  </body>
+</html>
