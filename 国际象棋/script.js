@@ -15,7 +15,7 @@ const PIECES = {
     rook: "♜",
     bishop: "♝",
     knight: "♞",
-    pawn: "♙",
+    pawn: "♟\uFE0E",
   },
 };
 
