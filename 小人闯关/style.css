@@ -1,0 +1,157 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "PingFang SC", "Microsoft YaHei", sans-serif;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #1a1a2e;
+  color: #fff;
+  overflow: hidden;
+  touch-action: none;
+}
+
+#app {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+}
+
+.screen {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.4s ease;
+}
+
+.hidden { display: none !important; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 开始界面 */
+#start-screen {
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  padding: 20px;
+}
+
+#start-screen h1 {
+  font-size: 2.8em;
+  margin-bottom: 8px;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.subtitle {
+  color: rgba(255,255,255,0.65);
+  margin-bottom: 24px;
+  font-size: 1.05em;
+}
+
+.rules {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 16px 24px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.rules p {
+  padding: 5px 0;
+  font-size: 0.98em;
+  color: rgba(255,255,255,0.8);
+}
+
+.high-score-display {
+  font-size: 1.1em;
+  color: #ffd200;
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 14px 48px;
+  font-size: 1.15em;
+  font-weight: 700;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f7971e, #ffd200);
+  color: #1a1a2e;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 20px rgba(247,151,30,0.3);
+}
+
+button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(247,151,30,0.5);
+}
+
+button:active { transform: translateY(0); }
+
+/* 游戏界面 */
+#game-screen {
+  background: #1a1a2e;
+}
+
+.hud {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 12px 16px;
+  background: rgba(0,0,0,0.5);
+  z-index: 10;
+  font-size: 1.1em;
+  font-weight: 700;
+}
+
+.hud-item span {
+  color: #ffd200;
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* 结算界面 */
+#result-screen {
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  text-align: center;
+  padding: 20px;
+}
+
+#result-icon { font-size: 4em; margin-bottom: 12px; }
+
+#result-title {
+  font-size: 1.8em;
+  margin-bottom: 12px;
+}
+
+#result-score {
+  font-size: 1.2em;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 8px;
+}
+
+#result-record {
+  font-size: 1.1em;
+  color: #ffd200;
+  margin-bottom: 28px;
+  min-height: 1.4em;
+}

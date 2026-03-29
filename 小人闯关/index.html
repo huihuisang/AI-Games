@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>小人闯关</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- 开始界面 -->
+    <div id="start-screen" class="screen">
+      <h1>🏃 小人闯关</h1>
+      <p class="subtitle">选对答案人数翻倍，选错减半！</p>
+      <div class="rules">
+        <p>👥 开始有 4 个小人</p>
+        <p>🧱 墙分两半：一半正确一半错误</p>
+        <p>✅ 选对 → 人数 ×2</p>
+        <p>❌ 选错 → 人数 ÷2（向下取整）</p>
+        <p>⏱️ 限时 60 秒，最终人数即得分</p>
+      </div>
+      <div class="high-score-display">最高纪录: <span id="high-score-start">0</span></div>
+      <button onclick="game.start()">开始闯关</button>
+    </div>
+
+    <!-- 游戏界面 -->
+    <div id="game-screen" class="screen hidden">
+      <div class="hud">
+        <div class="hud-item">👥 <span id="hud-count">4</span></div>
+        <div class="hud-item">⏱️ <span id="hud-time">60</span>s</div>
+        <div class="hud-item">🏆 <span id="hud-high">0</span></div>
+      </div>
+      <canvas id="game-canvas"></canvas>
+    </div>
+
+    <!-- 结算界面 -->
+    <div id="result-screen" class="screen hidden">
+      <div id="result-icon"></div>
+      <h2 id="result-title"></h2>
+      <p id="result-score"></p>
+      <p id="result-record"></p>
+      <button onclick="game.start()">再来一次</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
