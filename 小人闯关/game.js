@@ -1,251 +1,196 @@
 // ===================== 题库 =====================
 
-// 数学题生成器
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 function makeMathQuestion() {
   const ops = [
-    () => {
-      const a = randInt(2, 50), b = randInt(2, 50);
-      return { text: `${a} + ${b} = ${a + b}`, correct: true };
-    },
-    () => {
-      const a = randInt(2, 50), b = randInt(2, 50);
-      const wrong = a + b + randInt(1, 5) * (Math.random() < 0.5 ? 1 : -1);
-      return { text: `${a} + ${b} = ${wrong}`, correct: false };
-    },
-    () => {
-      const a = randInt(20, 99), b = randInt(2, a);
-      return { text: `${a} - ${b} = ${a - b}`, correct: true };
-    },
-    () => {
-      const a = randInt(20, 99), b = randInt(2, a);
-      const wrong = a - b + randInt(1, 5) * (Math.random() < 0.5 ? 1 : -1);
-      return { text: `${a} - ${b} = ${wrong}`, correct: false };
-    },
-    () => {
-      const a = randInt(2, 12), b = randInt(2, 12);
-      return { text: `${a} × ${b} = ${a * b}`, correct: true };
-    },
-    () => {
-      const a = randInt(2, 12), b = randInt(2, 12);
-      const wrong = a * b + randInt(1, 6) * (Math.random() < 0.5 ? 1 : -1);
-      return { text: `${a} × ${b} = ${wrong}`, correct: false };
-    },
-    () => {
-      const b = randInt(2, 12), c = randInt(2, 12), a = b * c;
-      return { text: `${a} ÷ ${b} = ${c}`, correct: true };
-    },
-    () => {
-      const b = randInt(2, 12), c = randInt(2, 12), a = b * c;
-      const wrong = c + randInt(1, 4) * (Math.random() < 0.5 ? 1 : -1);
-      return { text: `${a} ÷ ${b} = ${wrong}`, correct: false };
-    },
+    () => { const a = randInt(2,50), b = randInt(2,50); return { text: `${a}+${b}=${a+b}`, correct: true }; },
+    () => { const a = randInt(2,50), b = randInt(2,50); return { text: `${a}+${b}=${a+b+randInt(1,5)*(Math.random()<0.5?1:-1)}`, correct: false }; },
+    () => { const a = randInt(20,99), b = randInt(2,a); return { text: `${a}-${b}=${a-b}`, correct: true }; },
+    () => { const a = randInt(20,99), b = randInt(2,a); return { text: `${a}-${b}=${a-b+randInt(1,5)*(Math.random()<0.5?1:-1)}`, correct: false }; },
+    () => { const a = randInt(2,12), b = randInt(2,12); return { text: `${a}×${b}=${a*b}`, correct: true }; },
+    () => { const a = randInt(2,12), b = randInt(2,12); return { text: `${a}×${b}=${a*b+randInt(1,6)*(Math.random()<0.5?1:-1)}`, correct: false }; },
+    () => { const b = randInt(2,12), c = randInt(2,12), a = b*c; return { text: `${a}÷${b}=${c}`, correct: true }; },
+    () => { const b = randInt(2,12), c = randInt(2,12), a = b*c; return { text: `${a}÷${b}=${c+randInt(1,4)*(Math.random()<0.5?1:-1)}`, correct: false }; },
   ];
   return ops[randInt(0, ops.length - 1)]();
 }
 
-// 古诗题库（上句 → 正确下句 + 错误下句）
 const POEMS = [
-  { first: "床前明月光", right: "疑是地上霜", wrongs: ["春风吹又生", "处处闻啼鸟"] },
-  { first: "举头望明月", right: "低头思故乡", wrongs: ["春风吹又生", "轻舟已过万重山"] },
-  { first: "白日依山尽", right: "黄河入海流", wrongs: ["春风吹又生", "一行白鹭上青天"] },
-  { first: "欲穷千里目", right: "更上一层楼", wrongs: ["春风不度玉门关", "处处闻啼鸟"] },
-  { first: "春眠不觉晓", right: "处处闻啼鸟", wrongs: ["疑是地上霜", "低头思故乡"] },
-  { first: "离离原上草", right: "一岁一枯荣", wrongs: ["黄河入海流", "疑是地上霜"] },
-  { first: "野火烧不尽", right: "春风吹又生", wrongs: ["处处闻啼鸟", "低头思故乡"] },
-  { first: "锄禾日当午", right: "汗滴禾下土", wrongs: ["春风吹又生", "粒粒皆辛苦"] },
-  { first: "谁知盘中餐", right: "粒粒皆辛苦", wrongs: ["汗滴禾下土", "处处闻啼鸟"] },
-  { first: "日照香炉生紫烟", right: "遥看瀑布挂前川", wrongs: ["轻舟已过万重山", "疑是银河落九天"] },
-  { first: "飞流直下三千尺", right: "疑是银河落九天", wrongs: ["遥看瀑布挂前川", "一行白鹭上青天"] },
-  { first: "两个黄鹂鸣翠柳", right: "一行白鹭上青天", wrongs: ["千里江陵一日还", "黄河入海流"] },
-  { first: "朝辞白帝彩云间", right: "千里江陵一日还", wrongs: ["一行白鹭上青天", "黄河入海流"] },
-  { first: "两岸猿声啼不住", right: "轻舟已过万重山", wrongs: ["千里江陵一日还", "处处闻啼鸟"] },
-  { first: "黄河远上白云间", right: "一片孤城万仞山", wrongs: ["春风不度玉门关", "黄河入海流"] },
-  { first: "羌笛何须怨杨柳", right: "春风不度玉门关", wrongs: ["一片孤城万仞山", "更上一层楼"] },
-  { first: "好雨知时节", right: "当春乃发生", wrongs: ["润物细无声", "处处闻啼鸟"] },
-  { first: "随风潜入夜", right: "润物细无声", wrongs: ["当春乃发生", "春风吹又生"] },
-  { first: "千山鸟飞绝", right: "万径人踪灭", wrongs: ["独钓寒江雪", "处处闻啼鸟"] },
-  { first: "孤舟蓑笠翁", right: "独钓寒江雪", wrongs: ["万径人踪灭", "轻舟已过万重山"] },
-  { first: "墙角数枝梅", right: "凌寒独自开", wrongs: ["为有暗香来", "春风吹又生"] },
-  { first: "遥知不是雪", right: "为有暗香来", wrongs: ["凌寒独自开", "疑是地上霜"] },
-  { first: "鹅鹅鹅", right: "曲项向天歌", wrongs: ["白毛浮绿水", "红掌拨清波"] },
-  { first: "白毛浮绿水", right: "红掌拨清波", wrongs: ["曲项向天歌", "一行白鹭上青天"] },
-  { first: "小时不识月", right: "呼作白玉盘", wrongs: ["疑是地上霜", "低头思故乡"] },
-  { first: "危楼高百尺", right: "手可摘星辰", wrongs: ["更上一层楼", "疑是银河落九天"] },
-  { first: "返景入深林", right: "复照青苔上", wrongs: ["处处闻啼鸟", "独钓寒江雪"] },
-  { first: "松下问童子", right: "言师采药去", wrongs: ["只在此山中", "独钓寒江雪"] },
-  { first: "移舟泊烟渚", right: "日暮客愁新", wrongs: ["低头思故乡", "处处闻啼鸟"] },
-  { first: "慈母手中线", right: "游子身上衣", wrongs: ["粒粒皆辛苦", "低头思故乡"] },
+  { first: "床前明月光", right: "疑是地上霜", wrongs: ["春风吹又生","处处闻啼鸟"] },
+  { first: "举头望明月", right: "低头思故乡", wrongs: ["春风吹又生","轻舟已过万重山"] },
+  { first: "白日依山尽", right: "黄河入海流", wrongs: ["春风吹又生","一行白鹭上青天"] },
+  { first: "欲穷千里目", right: "更上一层楼", wrongs: ["春风不度玉门关","处处闻啼鸟"] },
+  { first: "春眠不觉晓", right: "处处闻啼鸟", wrongs: ["疑是地上霜","低头思故乡"] },
+  { first: "离离原上草", right: "一岁一枯荣", wrongs: ["黄河入海流","疑是地上霜"] },
+  { first: "野火烧不尽", right: "春风吹又生", wrongs: ["处处闻啼鸟","低头思故乡"] },
+  { first: "锄禾日当午", right: "汗滴禾下土", wrongs: ["春风吹又生","粒粒皆辛苦"] },
+  { first: "谁知盘中餐", right: "粒粒皆辛苦", wrongs: ["汗滴禾下土","处处闻啼鸟"] },
+  { first: "日照香炉生紫烟", right: "遥看瀑布挂前川", wrongs: ["轻舟已过万重山","疑是银河落九天"] },
+  { first: "飞流直下三千尺", right: "疑是银河落九天", wrongs: ["遥看瀑布挂前川","一行白鹭上青天"] },
+  { first: "两个黄鹂鸣翠柳", right: "一行白鹭上青天", wrongs: ["千里江陵一日还","黄河入海流"] },
+  { first: "朝辞白帝彩云间", right: "千里江陵一日还", wrongs: ["一行白鹭上青天","黄河入海流"] },
+  { first: "两岸猿声啼不住", right: "轻舟已过万重山", wrongs: ["千里江陵一日还","处处闻啼鸟"] },
+  { first: "黄河远上白云间", right: "一片孤城万仞山", wrongs: ["春风不度玉门关","黄河入海流"] },
+  { first: "羌笛何须怨杨柳", right: "春风不度玉门关", wrongs: ["一片孤城万仞山","更上一层楼"] },
+  { first: "好雨知时节", right: "当春乃发生", wrongs: ["润物细无声","处处闻啼鸟"] },
+  { first: "随风潜入夜", right: "润物细无声", wrongs: ["当春乃发生","春风吹又生"] },
+  { first: "千山鸟飞绝", right: "万径人踪灭", wrongs: ["独钓寒江雪","处处闻啼鸟"] },
+  { first: "孤舟蓑笠翁", right: "独钓寒江雪", wrongs: ["万径人踪灭","轻舟已过万重山"] },
+  { first: "墙角数枝梅", right: "凌寒独自开", wrongs: ["为有暗香来","春风吹又生"] },
+  { first: "遥知不是雪", right: "为有暗香来", wrongs: ["凌寒独自开","疑是地上霜"] },
+  { first: "鹅鹅鹅", right: "曲项向天歌", wrongs: ["白毛浮绿水","红掌拨清波"] },
+  { first: "白毛浮绿水", right: "红掌拨清波", wrongs: ["曲项向天歌","一行白鹭上青天"] },
+  { first: "小时不识月", right: "呼作白玉盘", wrongs: ["疑是地上霜","低头思故乡"] },
+  { first: "危楼高百尺", right: "手可摘星辰", wrongs: ["更上一层楼","疑是银河落九天"] },
+  { first: "松下问童子", right: "言师采药去", wrongs: ["只在此山中","独钓寒江雪"] },
+  { first: "慈母手中线", right: "游子身上衣", wrongs: ["粒粒皆辛苦","低头思故乡"] },
+  { first: "独在异乡为异客", right: "每逢佳节倍思亲", wrongs: ["低头思故乡","处处闻啼鸟"] },
+  { first: "葡萄美酒夜光杯", right: "欲饮琵琶马上催", wrongs: ["春风不度玉门关","千里江陵一日还"] },
 ];
 
 function makePoemQuestion() {
   const poem = POEMS[randInt(0, POEMS.length - 1)];
   if (Math.random() < 0.5) {
-    // 正确的
     return { text: `${poem.first}，${poem.right}`, correct: true };
   } else {
-    const wrong = poem.wrongs[randInt(0, poem.wrongs.length - 1)];
-    return { text: `${poem.first}，${wrong}`, correct: false };
+    return { text: `${poem.first}，${poem.wrongs[randInt(0, poem.wrongs.length - 1)]}`, correct: false };
   }
 }
 
-// 生成一堵墙的两个选项（保证一正一错）
-function makeWall() {
-  // 随机组合：正确数学+错误古诗, 正确古诗+错误数学, 正确数学+错误数学, 正确古诗+错误古诗
-  const types = [
-    () => [makeCorrectMath(), makeWrongPoem()],
-    () => [makeCorrectPoem(), makeWrongMath()],
-    () => [makeCorrectMath(), makeWrongMath()],
-    () => [makeCorrectPoem(), makeWrongPoem()],
-  ];
-  const pair = types[randInt(0, types.length - 1)]();
-  // 随机左右
+function makeCorrect() {
+  if (Math.random() < 0.5) {
+    let q; do { q = makeMathQuestion(); } while (!q.correct); return q;
+  } else {
+    let q; do { q = makePoemQuestion(); } while (!q.correct); return q;
+  }
+}
+
+function makeWrong() {
+  if (Math.random() < 0.5) {
+    let q; do { q = makeMathQuestion(); } while (q.correct); return q;
+  } else {
+    let q; do { q = makePoemQuestion(); } while (q.correct); return q;
+  }
+}
+
+function makeWallPair() {
+  const pair = [makeCorrect(), makeWrong()];
   if (Math.random() < 0.5) pair.reverse();
   return pair;
 }
 
-function makeCorrectMath() {
-  let q;
-  do { q = makeMathQuestion(); } while (!q.correct);
-  return q;
-}
-function makeWrongMath() {
-  let q;
-  do { q = makeMathQuestion(); } while (q.correct);
-  return q;
-}
-function makeCorrectPoem() {
-  let q;
-  do { q = makePoemQuestion(); } while (!q.correct);
-  return q;
-}
-function makeWrongPoem() {
-  let q;
-  do { q = makePoemQuestion(); } while (q.correct);
-  return q;
-}
-
-function randInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-// ===================== 游戏主体 =====================
+// ===================== 游戏 =====================
 
 class RunnerGame {
   constructor() {
-    this.canvas = document.getElementById("game-canvas");
-    this.ctx = null;
     this.highScore = parseInt(localStorage.getItem("runner_high") || "0");
     this.updateHighScoreDisplay();
-
     this.running = false;
-    this.count = 4;
-    this.timeLeft = 60;
-    this.walls = [];
-    this.runners = [];
-    this.scrollY = 0;
-    this.speed = 0;
-    this.choosing = false;
-    this.flashEffect = null;
-    this.lastTime = 0;
-    this.timerId = null;
-
-    // 游戏区域逻辑尺寸
-    this.W = 400;
-    this.H = 700;
   }
 
   start() {
     this.count = 4;
     this.timeLeft = 60;
-    this.scrollY = 0;
-    this.speed = 1.2; // pixels per frame (慢速)
-    this.choosing = false;
-    this.flashEffect = null;
-    this.walls = [];
-    this.runners = [];
+    this.running = false;
 
-    this.setupCanvas();
-    this.generateRunners();
-    this.generateInitialWalls();
     this.showScreen("game-screen");
-    this.updateHUD();
 
-    // 计时器
-    clearInterval(this.timerId);
-    this.timerId = setInterval(() => {
-      this.timeLeft--;
-      this.updateHUD();
-      if (this.timeLeft <= 0) {
-        this.endGame();
-      }
-    }, 1000);
+    // 延迟初始化确保布局完成
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        this.initCanvas();
+        this.initGame();
+        this.running = true;
 
-    this.running = true;
-    this.lastTime = performance.now();
-    requestAnimationFrame((t) => this.loop(t));
+        clearInterval(this.timerId);
+        this.timerId = setInterval(() => {
+          this.timeLeft--;
+          this.updateHUD();
+          if (this.timeLeft <= 0) this.endGame();
+        }, 1000);
 
-    // 输入
-    this.canvas.onclick = (e) => this.handleClick(e);
-    this.canvas.ontouchstart = (e) => {
-      e.preventDefault();
-      this.handleClick(e.touches[0]);
-    };
+        this.updateHUD();
+        this.lastTime = performance.now();
+        this.loop(this.lastTime);
+      });
+    });
   }
 
-  setupCanvas() {
+  initCanvas() {
+    const canvas = document.getElementById("game-canvas");
+    this.canvas = canvas;
+    const parent = canvas.parentElement;
+    const w = parent.clientWidth;
+    const h = parent.clientHeight;
     const dpr = window.devicePixelRatio || 1;
-    const rect = this.canvas.parentElement.getBoundingClientRect();
-    this.canvas.width = rect.width * dpr;
-    this.canvas.height = rect.height * dpr;
-    this.canvas.style.width = rect.width + "px";
-    this.canvas.style.height = rect.height + "px";
-    this.ctx = this.canvas.getContext("2d");
+
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + "px";
+    canvas.style.height = h + "px";
+
+    this.ctx = canvas.getContext("2d");
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    this.displayW = rect.width;
-    this.displayH = rect.height;
-    this.scaleX = this.displayW / this.W;
-    this.scaleY = this.displayH / this.H;
-  }
+    this.W = w;
+    this.H = h;
 
-  generateRunners() {
-    this.runners = [];
-    const max = Math.min(this.count, 50); // 最多画50个
-    for (let i = 0; i < max; i++) {
-      this.runners.push({
-        x: this.W / 2 + (Math.random() - 0.5) * 100,
-        wobble: Math.random() * Math.PI * 2,
-        wobbleSpeed: 1.5 + Math.random() * 1.5,
-        color: `hsl(${randInt(0, 360)}, 70%, 60%)`,
-      });
-    }
-  }
-
-  generateInitialWalls() {
-    this.walls = [];
-    // 墙在画面上方，小人从下方走上去碰到墙
-    // wallY 是相对于世界坐标
-    let y = -250; // 第一堵墙
-    for (let i = 0; i < 5; i++) {
-      this.walls.push(this.createWall(y));
-      y -= 300;
-    }
-  }
-
-  createWall(y) {
-    const pair = makeWall();
-    return {
-      y: y,
-      options: pair,
-      passed: false,
-      chosen: -1,
+    canvas.onclick = (e) => this.handleClick(e.clientX, e.clientY);
+    canvas.ontouchstart = (e) => {
+      e.preventDefault();
+      const t = e.touches[0];
+      this.handleClick(t.clientX, t.clientY);
     };
   }
 
-  // 游戏循环
+  initGame() {
+    // 小人位于屏幕底部 75% 处
+    this.runnerY = this.H * 0.75;
+
+    // 墙从屏幕上方进入，间隔固定像素
+    this.wallGap = this.H * 0.35; // 墙之间距离
+    this.wallSpeed = 0.8;         // 每帧向下移动像素（慢速）
+
+    // 生成第一批墙
+    this.walls = [];
+    for (let i = 0; i < 4; i++) {
+      this.walls.push({
+        y: -i * this.wallGap - 60,   // 从屏幕上方外开始
+        options: makeWallPair(),
+        passed: false,
+        chosen: -1,
+        revealed: false,
+      });
+    }
+
+    this.choosing = false;
+    this.flashTimer = 0;
+    this.flashType = "";
+    this.runners = this.makeRunners();
+  }
+
+  makeRunners() {
+    const arr = [];
+    const n = Math.min(this.count, 40);
+    for (let i = 0; i < n; i++) {
+      arr.push({
+        offsetX: (Math.random() - 0.5) * this.W * 0.25,
+        phase: Math.random() * Math.PI * 2,
+        speed: 1.5 + Math.random() * 1.5,
+        hue: randInt(0, 360),
+      });
+    }
+    return arr;
+  }
+
+  // ===================== 循环 =====================
+
   loop(now) {
     if (!this.running) return;
-    const dt = Math.min(now - this.lastTime, 32); // cap delta
+    const dt = Math.min(now - this.lastTime, 33);
     this.lastTime = now;
 
     this.update(dt);
@@ -254,108 +199,106 @@ class RunnerGame {
   }
 
   update(dt) {
-    if (this.choosing) return;
-
-    // 向上滚动
-    this.scrollY -= this.speed * (dt / 16);
+    const factor = dt / 16;
 
     // 小人摆动
-    this.runners.forEach((r) => {
-      r.wobble += r.wobbleSpeed * (dt / 300);
-    });
+    this.runners.forEach((r) => { r.phase += r.speed * (dt / 300); });
 
-    // 检查是否碰到墙
-    const runnerWorldY = this.scrollY + this.H * 0.7; // 小人在屏幕 70% 位置
+    if (this.choosing) return;
+
+    // 墙向下移动
     for (const wall of this.walls) {
-      if (!wall.passed && runnerWorldY <= wall.y + 30 && runnerWorldY >= wall.y - 10) {
-        // 到达这堵墙，暂停让玩家选
+      wall.y += this.wallSpeed * factor;
+    }
+
+    // 检测墙到达小人位置
+    for (const wall of this.walls) {
+      if (!wall.passed && wall.y >= this.runnerY - 40 && wall.y <= this.runnerY) {
         this.choosing = true;
         return;
       }
     }
 
-    // 回收远离的墙，生成新墙
-    if (this.walls.length > 0) {
-      const lastWall = this.walls[this.walls.length - 1];
-      if (lastWall.y - this.scrollY > -100) {
-        // 需要更多墙
-        this.walls.push(this.createWall(lastWall.y - 300));
-      }
+    // 回收掉出画面的墙
+    this.walls = this.walls.filter((w) => w.y < this.H + 100);
+
+    // 补充新墙
+    const topWall = this.walls.reduce((min, w) => w.y < min ? w.y : min, 9999);
+    if (topWall > -this.wallGap * 0.5) {
+      this.walls.push({
+        y: topWall - this.wallGap,
+        options: makeWallPair(),
+        passed: false,
+        chosen: -1,
+        revealed: false,
+      });
     }
 
-    // 回收通过的墙
-    this.walls = this.walls.filter((w) => w.y - this.scrollY < this.H + 100);
+    // 闪光倒计时
+    if (this.flashTimer > 0) this.flashTimer--;
   }
 
-  handleClick(e) {
+  handleClick(cx, cy) {
     if (!this.choosing) return;
 
     const rect = this.canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left);
-    const midX = this.displayW / 2;
-    const side = x < midX ? 0 : 1;
+    const x = cx - rect.left;
+    const side = x < this.W / 2 ? 0 : 1;
 
-    // 找到当前要选的墙
     const wall = this.walls.find((w) => !w.passed);
     if (!wall) return;
 
     wall.chosen = side;
     wall.passed = true;
-    const chosen = wall.options[side];
+    wall.revealed = true;
 
+    const chosen = wall.options[side];
     if (chosen.correct) {
       this.count = Math.min(this.count * 2, 999999);
-      this.flashEffect = { type: "correct", timer: 30 };
+      this.flashType = "correct";
     } else {
       this.count = Math.max(Math.floor(this.count / 2), 1);
-      this.flashEffect = { type: "wrong", timer: 30 };
+      this.flashType = "wrong";
     }
-
-    this.generateRunners();
+    this.flashTimer = 25;
+    this.runners = this.makeRunners();
     this.updateHUD();
 
-    // 短暂延迟后继续
+    // 短暂暂停后继续
     setTimeout(() => {
       this.choosing = false;
-    }, 600);
+    }, 700);
   }
 
   // ===================== 绘制 =====================
 
   draw() {
     const ctx = this.ctx;
-    const W = this.displayW;
-    const H = this.displayH;
-    const sx = this.scaleX;
-    const sy = this.scaleY;
+    const W = this.W;
+    const H = this.H;
 
     // 背景
     ctx.fillStyle = "#1a2a1a";
     ctx.fillRect(0, 0, W, H);
 
-    // 草地纹理线
-    ctx.strokeStyle = "rgba(50,120,50,0.15)";
-    ctx.lineWidth = 1;
-    for (let i = 0; i < 20; i++) {
-      const y = ((i * 50 + this.scrollY * 0.3) % H + H) % H;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(W, y);
-      ctx.stroke();
-    }
-
     // 道路
-    const roadL = W * 0.1;
-    const roadR = W * 0.9;
-    ctx.fillStyle = "#2a2a3a";
+    const roadL = W * 0.08;
+    const roadR = W * 0.92;
+    ctx.fillStyle = "#2a2a3e";
     ctx.fillRect(roadL, 0, roadR - roadL, H);
 
-    // 道路中线（虚线）
-    ctx.strokeStyle = "rgba(255,255,255,0.15)";
+    // 道路边线
+    ctx.strokeStyle = "rgba(255,255,255,0.12)";
     ctx.lineWidth = 2;
-    ctx.setLineDash([20, 15]);
-    const dashOffset = (this.scrollY * sy * 0.5) % 35;
-    ctx.lineDashOffset = dashOffset;
+    ctx.beginPath();
+    ctx.moveTo(roadL, 0); ctx.lineTo(roadL, H);
+    ctx.moveTo(roadR, 0); ctx.lineTo(roadR, H);
+    ctx.stroke();
+
+    // 中间虚线
+    ctx.strokeStyle = "rgba(255,255,255,0.08)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([16, 12]);
     ctx.beginPath();
     ctx.moveTo(W / 2, 0);
     ctx.lineTo(W / 2, H);
@@ -370,70 +313,64 @@ class RunnerGame {
     // 画小人
     this.drawRunners();
 
-    // 闪光效果
-    if (this.flashEffect && this.flashEffect.timer > 0) {
-      const alpha = this.flashEffect.timer / 30 * 0.3;
-      ctx.fillStyle = this.flashEffect.type === "correct"
-        ? `rgba(50,255,100,${alpha})`
-        : `rgba(255,50,50,${alpha})`;
+    // 闪光
+    if (this.flashTimer > 0) {
+      const a = (this.flashTimer / 25) * 0.25;
+      ctx.fillStyle = this.flashType === "correct"
+        ? `rgba(50,255,100,${a})`
+        : `rgba(255,50,50,${a})`;
       ctx.fillRect(0, 0, W, H);
-      this.flashEffect.timer--;
     }
   }
 
   drawWall(wall) {
     const ctx = this.ctx;
-    const W = this.displayW;
-    const sx = this.scaleX;
-    const sy = this.scaleY;
+    const W = this.W;
+    const y = wall.y;
 
-    const screenY = (wall.y - this.scrollY) * sy;
-    if (screenY < -100 || screenY > this.displayH + 50) return;
+    if (y < -80 || y > this.H + 50) return;
 
-    const roadL = W * 0.1;
-    const roadR = W * 0.9;
+    const roadL = W * 0.08;
+    const roadR = W * 0.92;
     const roadW = roadR - roadL;
     const midX = W / 2;
-    const wallH = 70 * sy;
-    const gap = 4 * sx;
+    const wallH = 56;
+    const gap = 6;
 
     for (let side = 0; side < 2; side++) {
-      const x = side === 0 ? roadL : midX + gap / 2;
-      const w = roadW / 2 - gap / 2;
+      const x = side === 0 ? roadL + 2 : midX + gap / 2;
+      const w = roadW / 2 - gap / 2 - 2;
       const opt = wall.options[side];
 
-      let bgColor, borderColor;
-      if (wall.passed) {
+      let bg, border;
+      if (wall.revealed) {
         if (opt.correct) {
-          bgColor = "rgba(39,174,96,0.85)";
-          borderColor = "#6bff9e";
+          bg = "rgba(39,174,96,0.88)"; border = "#6bff9e";
         } else {
-          bgColor = "rgba(192,57,43,0.85)";
-          borderColor = "#ff6b6b";
+          bg = "rgba(192,57,43,0.88)"; border = "#ff6b6b";
         }
       } else {
-        bgColor = "rgba(80,70,140,0.9)";
-        borderColor = "rgba(255,255,255,0.3)";
+        bg = "rgba(80,70,150,0.92)"; border = "rgba(255,255,255,0.25)";
       }
 
       // 墙体
-      ctx.fillStyle = bgColor;
+      const wy = y - wallH / 2;
+      ctx.fillStyle = bg;
       ctx.beginPath();
-      roundRect(ctx, x, screenY - wallH / 2, w, wallH, 10);
+      this.roundRect(x, wy, w, wallH, 10);
       ctx.fill();
-
-      ctx.strokeStyle = borderColor;
+      ctx.strokeStyle = border;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      roundRect(ctx, x, screenY - wallH / 2, w, wallH, 10);
+      this.roundRect(x, wy, w, wallH, 10);
       ctx.stroke();
 
       // 选中标记
-      if (wall.passed && wall.chosen === side) {
+      if (wall.revealed && wall.chosen === side) {
         ctx.strokeStyle = "#ffd200";
         ctx.lineWidth = 3;
         ctx.beginPath();
-        roundRect(ctx, x - 2, screenY - wallH / 2 - 2, w + 4, wallH + 4, 12);
+        this.roundRect(x - 2, wy - 2, w + 4, wallH + 4, 12);
         ctx.stroke();
       }
 
@@ -441,92 +378,105 @@ class RunnerGame {
       ctx.fillStyle = "#fff";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-
-      const text = opt.text;
-      // 自适应字号
-      const maxW = w - 16;
-      let fontSize = Math.min(15 * sx, 16);
-      ctx.font = `bold ${fontSize}px "PingFang SC","Microsoft YaHei",sans-serif`;
-      while (ctx.measureText(text).width > maxW && fontSize > 8) {
-        fontSize -= 0.5;
-        ctx.font = `bold ${fontSize}px "PingFang SC","Microsoft YaHei",sans-serif`;
+      const maxTW = w - 12;
+      let fs = Math.min(14, W * 0.035);
+      ctx.font = `bold ${fs}px "PingFang SC","Microsoft YaHei",sans-serif`;
+      while (ctx.measureText(opt.text).width > maxTW && fs > 7) {
+        fs -= 0.5;
+        ctx.font = `bold ${fs}px "PingFang SC","Microsoft YaHei",sans-serif`;
       }
-      ctx.fillText(text, x + w / 2, screenY, maxW);
+      ctx.fillText(opt.text, x + w / 2, y, maxTW);
 
-      // 已通过的显示✅❌
-      if (wall.passed) {
-        ctx.font = `${18 * sx}px sans-serif`;
-        ctx.fillText(opt.correct ? "✅" : "❌", x + w / 2, screenY - wallH / 2 + 14 * sy);
+      // ✅ ❌
+      if (wall.revealed) {
+        ctx.font = "16px sans-serif";
+        ctx.fillText(opt.correct ? "✅" : "❌", x + w / 2, wy + 12);
       }
     }
   }
 
   drawRunners() {
     const ctx = this.ctx;
-    const W = this.displayW;
-    const sx = this.scaleX;
-    const sy = this.scaleY;
+    const W = this.W;
+    const centerX = W / 2;
+    const baseY = this.runnerY;
+    const n = this.runners.length;
 
-    const baseY = this.displayH * 0.72;
-    const max = Math.min(this.runners.length, 50);
-
-    for (let i = 0; i < max; i++) {
+    for (let i = 0; i < n; i++) {
       const r = this.runners[i];
-      const px = r.x * sx;
-      const wobbleX = Math.sin(r.wobble) * 3 * sx;
-      const wobbleY = Math.abs(Math.sin(r.wobble * 2)) * 4 * sy;
-      const x = px + wobbleX;
-      const y = baseY - wobbleY - (i % 3) * 6 * sy;
+      const x = centerX + r.offsetX + Math.sin(r.phase) * 4;
+      const y = baseY + Math.abs(Math.sin(r.phase * 2)) * 5 + (i % 3) * 8;
 
-      const size = 10 * sx;
+      const s = Math.min(W * 0.025, 12); // 小人大小
 
-      // 身体
-      ctx.fillStyle = r.color;
+      ctx.fillStyle = `hsl(${r.hue},70%,60%)`;
+      ctx.strokeStyle = `hsl(${r.hue},70%,60%)`;
+      ctx.lineCap = "round";
+
       // 头
       ctx.beginPath();
-      ctx.arc(x, y - size * 1.6, size * 0.45, 0, Math.PI * 2);
+      ctx.arc(x, y - s * 2, s * 0.5, 0, Math.PI * 2);
       ctx.fill();
-      // 躯干
-      ctx.fillRect(x - size * 0.2, y - size * 1.15, size * 0.4, size * 0.8);
-      // 腿（走路摆动）
-      const legAngle = Math.sin(r.wobble * 2.5) * 0.4;
-      ctx.lineWidth = size * 0.2;
-      ctx.strokeStyle = r.color;
-      ctx.lineCap = "round";
-      // 左腿
+
+      // 身体
+      ctx.lineWidth = s * 0.35;
       ctx.beginPath();
-      ctx.moveTo(x - size * 0.1, y - size * 0.35);
-      ctx.lineTo(x - size * 0.1 + Math.sin(legAngle) * size * 0.5, y + size * 0.2);
+      ctx.moveTo(x, y - s * 1.5);
+      ctx.lineTo(x, y - s * 0.3);
       ctx.stroke();
-      // 右腿
+
+      // 腿
+      const leg = Math.sin(r.phase * 2.5) * s * 0.5;
+      ctx.lineWidth = s * 0.25;
       ctx.beginPath();
-      ctx.moveTo(x + size * 0.1, y - size * 0.35);
-      ctx.lineTo(x + size * 0.1 + Math.sin(-legAngle) * size * 0.5, y + size * 0.2);
+      ctx.moveTo(x, y - s * 0.3);
+      ctx.lineTo(x - s * 0.3 + leg, y + s * 0.3);
       ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, y - s * 0.3);
+      ctx.lineTo(x + s * 0.3 - leg, y + s * 0.3);
+      ctx.stroke();
+
       // 胳膊
-      ctx.lineWidth = size * 0.15;
+      ctx.lineWidth = s * 0.2;
+      const arm = Math.sin(r.phase * 2.5 + 1) * s * 0.4;
       ctx.beginPath();
-      ctx.moveTo(x - size * 0.2, y - size * 0.9);
-      ctx.lineTo(x - size * 0.5 + Math.sin(-legAngle) * size * 0.3, y - size * 0.4);
+      ctx.moveTo(x, y - s * 1.2);
+      ctx.lineTo(x - s * 0.5 + arm, y - s * 0.5);
       ctx.stroke();
       ctx.beginPath();
-      ctx.moveTo(x + size * 0.2, y - size * 0.9);
-      ctx.lineTo(x + size * 0.5 + Math.sin(legAngle) * size * 0.3, y - size * 0.4);
+      ctx.moveTo(x, y - s * 1.2);
+      ctx.lineTo(x + s * 0.5 - arm, y - s * 0.5);
       ctx.stroke();
     }
 
-    // 人数太多时显示数字
-    if (this.count > 50) {
-      ctx.fillStyle = "rgba(0,0,0,0.6)";
+    // 人数标签
+    if (this.count > 40) {
+      const tw = 80;
+      ctx.fillStyle = "rgba(0,0,0,0.65)";
       ctx.beginPath();
-      roundRect(ctx, W / 2 - 50 * sx, baseY + 12 * sy, 100 * sx, 28 * sy, 14 * sx);
+      this.roundRect(centerX - tw / 2, baseY + 20, tw, 24, 12);
       ctx.fill();
       ctx.fillStyle = "#ffd200";
-      ctx.font = `bold ${14 * sx}px sans-serif`;
+      ctx.font = "bold 13px sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(`共 ${this.count} 人`, W / 2, baseY + 26 * sy);
+      ctx.fillText(`共 ${this.count} 人`, centerX, baseY + 32);
     }
+  }
+
+  roundRect(x, y, w, h, r) {
+    const ctx = this.ctx;
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
   }
 
   // ===================== 结算 =====================
@@ -552,13 +502,13 @@ class RunnerGame {
     document.getElementById("result-title").textContent = title;
     document.getElementById("result-score").textContent = `最终人数: ${score} 人`;
     document.getElementById("result-record").textContent =
-      isNew ? `🎉 新纪录！打破了之前的最高分！` : `最高纪录: ${this.highScore} 人`;
+      isNew ? "🎉 新纪录！打破了之前的最高分！" : `最高纪录: ${this.highScore} 人`;
 
     this.updateHighScoreDisplay();
     this.showScreen("result-screen");
   }
 
-  // ===================== 工具 =====================
+  // ===================== UI =====================
 
   updateHUD() {
     document.getElementById("hud-count").textContent = this.count;
@@ -573,26 +523,12 @@ class RunnerGame {
 
   showScreen(id) {
     document.querySelectorAll(".screen").forEach((s) => s.classList.add("hidden"));
-    const screen = document.getElementById(id);
-    screen.classList.remove("hidden");
-    screen.style.animation = "none";
-    screen.offsetHeight;
-    screen.style.animation = "";
+    const el = document.getElementById(id);
+    el.classList.remove("hidden");
+    el.style.animation = "none";
+    el.offsetHeight;
+    el.style.animation = "";
   }
-}
-
-// 圆角矩形辅助
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
 }
 
 const game = new RunnerGame();
