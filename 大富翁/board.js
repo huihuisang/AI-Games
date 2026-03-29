@@ -103,7 +103,12 @@ class GameBoard {
     this.boardPx = 0;
 
     this.initTiles();
-    this.resize();
+    // Delay initial resize to let the layout settle
+    requestAnimationFrame(() => {
+      this.resize();
+      // Double-check after a short delay for mobile browsers
+      setTimeout(() => this.resize(), 100);
+    });
     window.addEventListener("resize", () => this.resize());
   }
 
@@ -117,10 +122,14 @@ class GameBoard {
     const container = this.canvas.parentElement;
     const w = container.clientWidth;
     const h = container.clientHeight;
+
+    // Fallback if container has no dimensions yet
+    if (w <= 0 || h <= 0) return;
+
     const dpr = window.devicePixelRatio || 1;
 
     // Board fits in the smaller dimension
-    const side = Math.min(w, h) - 20;
+    const side = Math.max(Math.min(w, h) - 10, 200);
     this.canvas.width = side * dpr;
     this.canvas.height = side * dpr;
     this.canvas.style.width = side + "px";

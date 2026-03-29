@@ -70,7 +70,6 @@ class MonopolyGame {
       );
     }
 
-    this.board = new GameBoard();
     this.cardSystem = new CardSystem();
     this.currentPlayerIndex = 0;
     this.gameStarted = true;
@@ -78,13 +77,16 @@ class MonopolyGame {
     this.startScreen.classList.add("hidden");
     this.gameScreen.classList.remove("hidden");
 
-    this.messageBox.innerHTML = "";
-    this.log("游戏开始！祝你好运！");
-    this.log(`${this.currentPlayer.name} 的回合，请投掷骰子`);
-
-    this.updateUI();
-    this.board.draw(this.players);
-    this.enableRoll();
+    // Wait for layout to settle before initializing canvas
+    requestAnimationFrame(() => {
+      this.board = new GameBoard();
+      this.messageBox.innerHTML = "";
+      this.log("游戏开始！祝你好运！");
+      this.log(`${this.currentPlayer.name} 的回合，请投掷骰子`);
+      this.updateUI();
+      this.board.draw(this.players);
+      this.enableRoll();
+    });
   }
 
   // Logging
