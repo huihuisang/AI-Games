@@ -80,7 +80,11 @@ class ChessGame {
   placePiece(square, piece) {
     const color = piece[0] === "w" ? "white" : "black";
     const type = this.getPieceType(piece[1]);
-    square.innerHTML = PIECES[color][type];
+    const span = document.createElement("span");
+    span.className = color === "white" ? "piece-white" : "piece-black";
+    span.textContent = PIECES[color][type];
+    square.innerHTML = "";
+    square.appendChild(span);
     square.dataset.piece = piece;
   }
 
@@ -306,15 +310,30 @@ class ChessGame {
     this.isInCheck = this.isKingInCheck(this.currentPlayer);
     const statusText = document.getElementById("current-player");
 
+    // Clear previous check highlights
+    document.querySelectorAll(".square.in-check").forEach((sq) => {
+      sq.classList.remove("in-check");
+    });
+
     if (this.isCheckmate(this.currentPlayer)) {
       const winner = this.currentPlayer === "white" ? "黑方" : "白方";
       statusText.textContent = `将死！${winner}获胜！`;
-      statusText.style.color = "red";
+      statusText.style.color = "#ff6b6b";
       this.isGameOver = true;
     } else if (this.isInCheck) {
       const player = this.currentPlayer === "white" ? "白方" : "黑方";
       statusText.textContent = `${player}被将军！`;
-      statusText.style.color = "red";
+      statusText.style.color = "#ff6b6b";
+      // Highlight the king square
+      const kingChar = this.currentPlayer === "white" ? "w" : "b";
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (this.board[r][c] === kingChar + "k") {
+            const sq = document.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+            if (sq) sq.classList.add("in-check");
+          }
+        }
+      }
     } else {
       const player = this.currentPlayer === "white" ? "白方" : "黑方";
       statusText.textContent = `${player}回合`;
