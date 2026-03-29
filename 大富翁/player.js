@@ -1,163 +1,107 @@
 // 玩家类
 class Player {
-  constructor({ id, name, color, money, position, isAI }) {
+  constructor({ id, name, color, money, isAI }) {
     this.id = id;
     this.name = name;
     this.color = color;
     this.money = money;
-    this.position = position;
+    this.position = 0;
     this.isAI = isAI;
-    this.properties = []; // 拥有的房产
-    this.inJail = false; // 是否在监狱
-    this.jailTurns = 0; // 在监狱待的回合数
-    this.cards = []; // 持有的卡片
+    this.properties = [];
+    this.inJail = false;
+    this.jailTurns = 0;
+    this.cards = [];
+    this.bankrupt = false;
+    this.doublesCount = 0;
   }
 
-  // 添加房产
-  addProperty(property) {
-    this.properties.push(property);
-    property.owner = this; // 设置房产所有者
+  addProperty(tile) {
+    this.properties.push(tile);
+    tile.owner = this;
   }
 
-  // 移除房产
-  removeProperty(property) {
-    const index = this.properties.indexOf(property);
-    if (index > -1) {
-      this.properties.splice(index, 1);
-      property.owner = null; // 清除房产所有者
+  removeProperty(tile) {
+    const idx = this.properties.indexOf(tile);
+    if (idx > -1) {
+      this.properties.splice(idx, 1);
+      tile.owner = null;
+      tile.houses = 0;
     }
   }
 
-  // 获取总资产
   getTotalAssets() {
-    const propertyValue = this.properties.reduce((total, property) => {
-      return total + property.price + property.houses * property.buildingCost;
+    const propValue = this.properties.reduce((sum, p) => {
+      return sum + p.price + p.houses * p.buildCost;
     }, 0);
-    return this.money + propertyValue;
+    return this.money + propValue;
   }
 
-  // 检查是否拥有某个颜色的所有房产
-  hasMonopoly(color) {
-    // 获取当前游戏实例
+  hasMonopoly(colorGroup) {
+    if (!colorGroup) return false;
     const game = window.game;
     if (!game || !game.board) return false;
-
-    const colorProperties = this.properties.filter((p) => p.color === color);
-    const totalColorProperties = game.board.tiles.filter(
-      (t) => t.type === "property" && t.color === color
+    const total = game.board.tiles.filter(
+      (t) => t.colorGroup === colorGroup
     ).length;
-    return colorProperties.length === totalColorProperties;
+    const owned = this.properties.filter(
+      (p) => p.colorGroup === colorGroup
+    ).length;
+    return owned === total && total > 0;
   }
 
-  // 进入监狱
   goToJail() {
     this.inJail = true;
     this.jailTurns = 0;
-    const game = window.game;
-    if (game && game.board) {
-      this.position = game.board.jailPosition;
-    }
+    // Jail is tile index 7
+    this.position = 7;
   }
 
-  // 从监狱释放
   releaseFromJail() {
     this.inJail = false;
     this.jailTurns = 0;
   }
 
-  // AI决策逻辑
-  makeDecision(gameState) {
-    if (!this.isAI) return null;
+  // AI: decide whether to buy
+  shouldBuy(tile) {
+    if (!this.isAI) return false;
+    if (this.money < tile.price) return false;
 
-    // 获取当前位置的地块
-    const currentTile = gameState.board.tiles[this.position];
+    const safetyMoney = 3000;
+    const remaining = this.money - tile.price;
 
-    // 如果是空地且有足够的钱，就购买
-    if (
-      currentTile.type === "property" &&
-      !currentTile.owner &&
-      this.money >= currentTile.price
-    ) {
-      // 判断是否值得购买
-      const worthBuying = this.evaluateProperty(currentTile, gameState);
-      if (worthBuying) {
-        return "buy";
-      }
+    // Always buy if can complete a monopoly
+    if (tile.colorGroup) {
+      const sameGroup = this.properties.filter(
+        (p) => p.colorGroup === tile.colorGroup
+      ).length;
+      const totalInGroup = window.game.board.tiles.filter(
+        (t) => t.colorGroup === tile.colorGroup
+      ).length;
+      if (sameGroup === totalInGroup - 1) return true;
     }
 
-    // 如果是自己的地产且有足够的钱，考虑建房
-    if (
-      currentTile.type === "property" &&
-      currentTile.owner === this &&
-      currentTile.houses < 3 &&
-      this.money >= currentTile.buildingCost
-    ) {
-      const worthBuilding = this.evaluateBuilding(currentTile, gameState);
-      if (worthBuilding) {
-        return "build";
-      }
+    // Buy railroads/utilities if affordable
+    if (tile.type === "railroad" || tile.type === "utility") {
+      return remaining > safetyMoney;
     }
 
-    return "end";
+    // Buy property if we can afford it with safety margin
+    if (remaining > safetyMoney * 0.5) return true;
+
+    // Cheap properties are worth buying even when tight on cash
+    if (tile.price <= 1000 && remaining > 1000) return true;
+
+    return false;
   }
 
-  // AI评估是否值得购买地产
-  evaluateProperty(property, gameState) {
-    // 保留最低资金安全线
-    const SAFETY_MONEY = 5000;
-    if (this.money - property.price < SAFETY_MONEY) {
-      return false;
-    }
-
-    // 评估地块价值
-    const value = this.calculatePropertyValue(property, gameState);
-    return value > property.price;
-  }
-
-  // AI评估是否值得建房
-  evaluateBuilding(property, gameState) {
-    // 保留最低资金安全线
-    const SAFETY_MONEY = 3000;
-    if (this.money - property.buildingCost < SAFETY_MONEY) {
-      return false;
-    }
-
-    // 如果有垄断，优先建房
-    if (this.hasMonopoly(property.color)) {
-      return true;
-    }
-
-    // 评估建房收益
-    const currentRent = property.calculateRent();
-    const futureRent = property.calculateRent(property.houses + 1);
-    const rentIncrease = futureRent - currentRent;
-
-    // 如果租金增加能在10回合内收回成本，就建房
-    return rentIncrease * 10 > property.buildingCost;
-  }
-
-  // AI计算地产价值
-  calculatePropertyValue(property, gameState) {
-    let value = property.price;
-
-    // 如果是垄断的最后一块地，价值更高
-    const sameColorProperties = gameState.board.tiles.filter(
-      (t) => t.type === "property" && t.color === property.color
-    );
-    const ownedSameColor = this.properties.filter(
-      (p) => p.color === property.color
-    ).length;
-    if (ownedSameColor === sameColorProperties.length - 1) {
-      value *= 1.5;
-    }
-
-    // 根据位置评估价值
-    const position = property.position;
-    if (position < 10 || position > 30) {
-      // 靠近起点的位置
-      value *= 1.2;
-    }
-
-    return value;
+  // AI: decide whether to build
+  shouldBuild(tile) {
+    if (!this.isAI) return false;
+    if (tile.type !== "property") return false;
+    if (tile.owner !== this) return false;
+    if (tile.houses >= 5) return false;
+    if (!this.hasMonopoly(tile.colorGroup)) return false;
+    if (this.money - tile.buildCost < 2000) return false;
+    return true;
   }
 }
