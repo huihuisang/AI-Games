@@ -217,6 +217,11 @@ body {
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
 }
 
+/* 黑兵♟字形偏大，单独缩小 */
+.piece-black-pawn {
+  font-size: 0.82em;
+}
+
 /* 黑子：实心字符，本身就是黑色填充 */
 .piece-black {
   color: #1a1a1a;

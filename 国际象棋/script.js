@@ -82,7 +82,9 @@ class ChessGame {
     const color = piece[0] === "w" ? "white" : "black";
     const type = this.getPieceType(piece[1]);
     const span = document.createElement("span");
-    span.className = color === "white" ? "piece-white" : "piece-black";
+    let cls = color === "white" ? "piece-white" : "piece-black";
+    if (color === "black" && type === "pawn") cls += " piece-black-pawn";
+    span.className = cls;
     span.textContent = PIECES[color][type];
     square.innerHTML = "";
     square.appendChild(span);
