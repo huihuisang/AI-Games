@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>抽奖炸弹</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- 开始界面 -->
+    <div id="start-screen" class="screen">
+      <h1>💣 抽奖炸弹</h1>
+      <p class="subtitle">炸弹藏在哪个盒子里？试试你的运气！</p>
+      <div class="rules">
+        <p>🎯 每轮 10 次选择</p>
+        <p>💣 选中炸弹得 1 分</p>
+        <p>🔥 超过 5 分进入下一轮</p>
+        <p>❌ 5 分或以下游戏结束</p>
+      </div>
+      <button id="btn-start" onclick="game.start()">开始游戏</button>
+    </div>
+
+    <!-- 游戏界面 -->
+    <div id="game-screen" class="screen hidden">
+      <div class="top-bar">
+        <div class="stat">第 <span id="round-num">1</span> 轮</div>
+        <div class="stat">第 <span id="pick-num">1</span> / 10 次</div>
+        <div class="stat">得分: <span id="score">0</span></div>
+      </div>
+
+      <div class="prompt" id="prompt">选一个盒子！</div>
+
+      <div class="boxes" id="boxes">
+        <div class="box" data-index="0" onclick="game.pick(0)">
+          <div class="box-front">🎁</div>
+          <div class="box-back" id="box-back-0"></div>
+        </div>
+        <div class="box" data-index="1" onclick="game.pick(1)">
+          <div class="box-front">🎁</div>
+          <div class="box-back" id="box-back-1"></div>
+        </div>
+      </div>
+
+      <div class="history" id="history"></div>
+    </div>
+
+    <!-- 结算界面 -->
+    <div id="result-screen" class="screen hidden">
+      <div id="result-icon"></div>
+      <h2 id="result-title"></h2>
+      <div id="result-detail"></div>
+      <button onclick="game.restart()">再来一次</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
