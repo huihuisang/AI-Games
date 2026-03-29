@@ -1,4 +1,4 @@
-// 棋子的 Unicode 字符
+// 棋子的 Unicode 字符 - 统一用轮廓字符，靠 CSS 区分黑白
 const PIECES = {
   white: {
     king: "♔",
@@ -9,12 +9,12 @@ const PIECES = {
     pawn: "♙",
   },
   black: {
-    king: "♚",
-    queen: "♛",
-    rook: "♜",
-    bishop: "♝",
-    knight: "♞",
-    pawn: "♟",
+    king: "♔",
+    queen: "♕",
+    rook: "♖",
+    bishop: "♗",
+    knight: "♘",
+    pawn: "♙",
   },
 };
 
