@@ -1,508 +1,533 @@
-// 游戏主类
+// 大富翁游戏主类
 class MonopolyGame {
   constructor() {
-    try {
-      console.log("开始初始化游戏...");
-      this.players = [];
-      this.currentPlayerIndex = 0;
-      this.gameStarted = false;
-      this.board = null;
-      this.dice = null;
-      this.cardSystem = null;
-
-      // 初始化游戏设置
-      this.INITIAL_MONEY = 20000;
-      this.SALARY = 2000; // 经过起点获得的工资
-
-      // 绑定DOM元素
-      this.bindElements();
-      // 绑定事件
-      this.bindEvents();
-      console.log("游戏初始化完成");
-    } catch (error) {
-      console.error("游戏初始化失败:", error);
-      alert("游戏初始化失败，请刷新页面重试");
-    }
-  }
-
-  // 绑定DOM元素
-  bindElements() {
-    console.log("开始绑定DOM元素...");
-    this.startScreen = document.getElementById("start-screen");
-    if (!this.startScreen) throw new Error("找不到开始界面元素");
-
-    this.gameScreen = document.getElementById("game-screen");
-    if (!this.gameScreen) throw new Error("找不到游戏界面元素");
-
-    this.playerCount = document.getElementById("player-count");
-    if (!this.playerCount) throw new Error("找不到玩家数量选择元素");
-
-    this.startButton = document.getElementById("start-game");
-    if (!this.startButton) throw new Error("找不到开始游戏按钮");
-
-    this.rollDiceButton = document.getElementById("roll-dice");
-    if (!this.rollDiceButton) throw new Error("找不到骰子按钮");
-
-    this.buyPropertyButton = document.getElementById("buy-property");
-    if (!this.buyPropertyButton) throw new Error("找不到购买房产按钮");
-
-    this.buildHouseButton = document.getElementById("build-house");
-    if (!this.buildHouseButton) throw new Error("找不到建造房屋按钮");
-
-    this.endTurnButton = document.getElementById("end-turn");
-    if (!this.endTurnButton) throw new Error("找不到结束回合按钮");
-
-    this.messageBox = document.getElementById("message-box");
-    if (!this.messageBox) throw new Error("找不到消息框元素");
-
-    this.playersInfo = document.getElementById("players-info");
-    if (!this.playersInfo) throw new Error("找不到玩家信息元素");
-
-    this.diceElement = document.getElementById("dice");
-    if (!this.diceElement) throw new Error("找不到骰子元素");
-
-    console.log("DOM元素绑定完成");
-  }
-
-  // 绑定事件监听器
-  bindEvents() {
-    console.log("开始绑定事件...");
-
-    // 开始游戏按钮点击事件
-    this.startButton.addEventListener("click", () => {
-      console.log("点击开始游戏按钮");
-      this.startGame();
-    });
-
-    // 投掷骰子按钮点击事件
-    this.rollDiceButton.addEventListener("click", () => {
-      console.log("点击投掷骰子按钮");
-      if (!this.rollDiceButton.disabled) {
-        this.rollDice();
-      }
-    });
-
-    // 购买房产按钮点击事件
-    this.buyPropertyButton.addEventListener("click", () => {
-      console.log("点击购买房产按钮");
-      if (!this.buyPropertyButton.disabled) {
-        this.buyProperty();
-      }
-    });
-
-    // 建造房屋按钮点击事件
-    this.buildHouseButton.addEventListener("click", () => {
-      console.log("点击建造房屋按钮");
-      if (!this.buildHouseButton.disabled) {
-        this.buildHouse();
-      }
-    });
-
-    // 结束回合按钮点击事件
-    this.endTurnButton.addEventListener("click", () => {
-      console.log("点击结束回合按钮");
-      if (!this.endTurnButton.disabled) {
-        this.endTurn();
-      }
-    });
-
-    console.log("事件绑定完成");
-  }
-
-  // 开始游戏
-  startGame() {
-    try {
-      console.log("开始游戏初始化...");
-      const playerCount = parseInt(this.playerCount.value);
-      if (isNaN(playerCount) || playerCount < 1 || playerCount > 4) {
-        this.showMessage("请选择有效的玩家数量（1-4人）");
-        return;
-      }
-
-      // 初始化游戏组件
-      console.log("初始化玩家...");
-      this.initializePlayers(playerCount);
-
-      console.log("初始化游戏棋盘...");
-      this.board = new GameBoard();
-
-      console.log("初始化卡牌系统...");
-      this.cardSystem = new CardSystem();
-
-      this.gameStarted = true;
-
-      // 切换界面
-      console.log("切换到游戏界面...");
-      this.startScreen.style.display = "none";
-      this.gameScreen.style.display = "block";
-      this.gameScreen.classList.remove("hidden");
-
-      // 初始化游戏状态
-      this.currentPlayerIndex = 0;
-      this.updateUI();
-      this.showMessage("游戏开始！");
-
-      // 如果第一个玩家是人类玩家，启用骰子按钮
-      console.log("设置初始玩家...");
-      if (!this.currentPlayer.isAI) {
-        this.enableDiceRoll();
-        this.showMessage(`${this.currentPlayer.name} 的回合，请投掷骰子`);
-      } else {
-        this.playAITurn();
-      }
-
-      // 初始绘制棋盘
-      console.log("绘制游戏棋盘...");
-      this.board.draw();
-      this.board.drawPlayers(this.players);
-
-      console.log("游戏初始化完成！");
-    } catch (error) {
-      console.error("游戏初始化错误:", error);
-      this.showMessage("游戏初始化失败，请刷新页面重试");
-    }
-  }
-
-  // 初始化玩家
-  initializePlayers(count) {
-    this.players = []; // 清空现有玩家
-    const colors = ["#e74c3c", "#2ecc71", "#3498db", "#f1c40f"];
-    const names = ["玩家1", "玩家2", "玩家3", "玩家4"];
-
-    for (let i = 0; i < count; i++) {
-      const isAI = i > 0; // 第一个玩家是人类，其他是AI
-      const player = new Player({
-        id: i,
-        name: names[i],
-        color: colors[i],
-        money: this.INITIAL_MONEY,
-        position: 0,
-        isAI: isAI,
-      });
-      this.players.push(player);
-    }
-  }
-
-  // 掷骰子
-  rollDice() {
-    const diceNumber = Math.floor(Math.random() * 6) + 1;
-    this.diceElement.textContent = diceNumber;
-    this.movePlayer(this.currentPlayer, diceNumber);
-    this.rollDiceButton.disabled = true;
-    this.showMessage(`${this.currentPlayer.name} 掷出了 ${diceNumber} 点`);
-  }
-
-  // 移动玩家
-  movePlayer(player, steps) {
-    const oldPosition = player.position;
-    player.position = (player.position + steps) % this.board.tiles.length;
-
-    // 检查是否经过起点
-    if (player.position < oldPosition) {
-      player.money += this.SALARY;
-      this.showMessage(`${player.name} 经过起点，获得工资 ${this.SALARY}`);
-    }
-
-    this.board.drawPlayers(this.players);
-    this.checkCurrentTile();
-    this.updateUI();
-  }
-
-  // 检查当前格子
-  checkCurrentTile() {
-    const currentTile = this.board.tiles[this.currentPlayer.position];
-
-    if (
-      currentTile.type === "property" ||
-      currentTile.type === "railroad" ||
-      currentTile.type === "utility"
-    ) {
-      if (!currentTile.owner) {
-        this.buyPropertyButton.disabled = false;
-        this.endTurnButton.disabled = false;
-      } else if (currentTile.owner !== this.currentPlayer) {
-        this.payRent(currentTile);
-      }
-    } else if (currentTile.type === "chance") {
-      this.drawChanceCard();
-    } else if (currentTile.type === "fate") {
-      this.drawFateCard();
-    } else {
-      // 其他类型的格子（如：起点、监狱等）
-      this.endTurnButton.disabled = false;
-    }
-  }
-
-  // 购买房产
-  buyProperty() {
-    const currentTile = this.board.tiles[this.currentPlayer.position];
-    if (
-      currentTile.type === "property" ||
-      currentTile.type === "railroad" ||
-      currentTile.type === "utility"
-    ) {
-      if (!currentTile.owner && this.currentPlayer.money >= currentTile.price) {
-        this.currentPlayer.money -= currentTile.price;
-        this.currentPlayer.addProperty(currentTile); // 使用Player类中的addProperty方法
-        this.showMessage(
-          `${this.currentPlayer.name} 购买了 ${currentTile.name}，支付 ${currentTile.price} 元`
-        );
-        this.buyPropertyButton.disabled = true;
-        this.endTurnButton.disabled = false;
-        this.updateUI();
-        this.board.draw(); // 重新绘制棋盘以显示所有权变化
-      } else if (this.currentPlayer.money < currentTile.price) {
-        this.showMessage("资金不足，无法购买！");
-      }
-    }
-  }
-
-  // 建造房屋
-  buildHouse() {
-    const currentTile = this.board.tiles[this.currentPlayer.position];
-    if (
-      currentTile.type === "property" &&
-      currentTile.owner === this.currentPlayer &&
-      currentTile.houses < 3 &&
-      this.currentPlayer.money >= currentTile.buildingCost
-    ) {
-      // 检查是否拥有同色系的所有地产
-      if (!this.currentPlayer.hasMonopoly(currentTile.color)) {
-        this.showMessage("需要拥有同色系的所有地产才能建造房屋！");
-        return;
-      }
-
-      this.currentPlayer.money -= currentTile.buildingCost;
-      currentTile.houses++;
-      this.showMessage(
-        `${this.currentPlayer.name} 在 ${currentTile.name} 建造了一座房屋，支付 ${currentTile.buildingCost} 元`
-      );
-      this.buildHouseButton.disabled = currentTile.houses >= 3;
-      this.endTurnButton.disabled = false;
-      this.updateUI();
-      this.board.draw(); // 重新绘制棋盘以显示新房屋
-    }
-  }
-
-  // 支付租金
-  payRent(tile) {
-    if (!tile.owner || tile.owner === this.currentPlayer) return;
-
-    let rent = 0;
-    if (tile.type === "property") {
-      rent = tile.calculateRent();
-    } else if (tile.type === "railroad") {
-      // 铁路租金：基础租金 * 2^(拥有的铁路数量-1)
-      const railroadCount = tile.owner.properties.filter(
-        (p) => p.type === "railroad"
-      ).length;
-      rent = 500 * Math.pow(2, railroadCount - 1);
-    } else if (tile.type === "utility") {
-      // 公用事业租金：根据拥有的公用事业数量和骰子点数计算
-      const utilityCount = tile.owner.properties.filter(
-        (p) => p.type === "utility"
-      ).length;
-      const diceNumber = parseInt(this.diceElement.textContent);
-      rent = utilityCount === 1 ? diceNumber * 100 : diceNumber * 200;
-    }
-
-    // 检查是否有免费通行卡
-    const freePassIndex = this.currentPlayer.cards.indexOf("免费通行");
-    if (freePassIndex !== -1) {
-      this.currentPlayer.cards.splice(freePassIndex, 1);
-      this.showMessage(`${this.currentPlayer.name} 使用免费通行卡，免除租金！`);
-      this.endTurnButton.disabled = false;
-      return;
-    }
-
-    if (this.currentPlayer.money >= rent) {
-      this.currentPlayer.money -= rent;
-      tile.owner.money += rent;
-      this.showMessage(
-        `${this.currentPlayer.name} 支付租金 ${rent} 元给 ${tile.owner.name}`
-      );
-      this.endTurnButton.disabled = false;
-    } else {
-      this.bankruptcy(tile.owner);
-    }
-    this.updateUI();
-  }
-
-  // 破产处理
-  bankruptcy(creditor) {
-    this.showMessage(`${this.currentPlayer.name} 破产了！`);
-
-    // 将所有资产转移给债权人
-    if (creditor) {
-      // 转移所有房产
-      [...this.currentPlayer.properties].forEach((property) => {
-        this.currentPlayer.removeProperty(property);
-        creditor.addProperty(property);
-      });
-
-      // 转移所有现金
-      creditor.money += this.currentPlayer.money;
-      this.currentPlayer.money = 0;
-
-      this.showMessage(
-        `${this.currentPlayer.name} 的所有资产已转移给 ${creditor.name}`
-      );
-    }
-
-    // 从游戏中移除破产玩家
-    const playerIndex = this.players.indexOf(this.currentPlayer);
-    this.players.splice(playerIndex, 1);
-
-    // 如果只剩一个玩家，游戏结束
-    if (this.players.length === 1) {
-      this.gameOver(this.players[0]);
-    } else {
-      // 调整当前玩家索引
-      this.currentPlayerIndex = this.currentPlayerIndex % this.players.length;
-      this.updateUI();
-      this.enableDiceRoll();
-    }
-  }
-
-  // 游戏结束
-  gameOver(winner) {
-    this.showMessage(`游戏结束！${winner.name} 获得胜利！`);
+    this.players = [];
+    this.currentPlayerIndex = 0;
     this.gameStarted = false;
+    this.board = null;
+    this.cardSystem = null;
+    this.awaitingAction = false;
+    this.lastDiceTotal = 0;
 
-    // 显示最终资产统计
-    this.showMessage(`最终资产统计：`);
-    this.showMessage(`${winner.name}: ${winner.getTotalAssets()} 元`);
+    this.INITIAL_MONEY = 20000;
+    this.SALARY = 2000;
+    this.JAIL_FEE = 1000;
 
-    // 禁用所有按钮
-    this.rollDiceButton.disabled = true;
-    this.buyPropertyButton.disabled = true;
-    this.buildHouseButton.disabled = true;
-    this.endTurnButton.disabled = true;
-
-    // 添加重新开始按钮
-    const restartButton = document.createElement("button");
-    restartButton.textContent = "重新开始";
-    restartButton.onclick = () => window.location.reload();
-    this.messageBox.appendChild(restartButton);
+    this.bindElements();
+    this.bindEvents();
   }
 
-  // 结束回合
-  endTurn() {
-    this.currentPlayerIndex =
-      (this.currentPlayerIndex + 1) % this.players.length;
-    this.updateUI();
-    this.enableDiceRoll();
-
-    if (this.currentPlayer.isAI) {
-      this.playAITurn();
-    }
-  }
-
-  // AI回合
-  playAITurn() {
-    // TODO: 实现AI逻辑
-    setTimeout(() => {
-      this.rollDice();
-      // AI决策逻辑
-      setTimeout(() => {
-        this.endTurn();
-      }, 1000);
-    }, 1000);
-  }
-
-  // 启用骰子按钮
-  enableDiceRoll() {
-    this.rollDiceButton.disabled = false;
-    this.endTurnButton.disabled = true;
-  }
-
-  // 显示消息
-  showMessage(message) {
-    const messageElement = document.createElement("div");
-    messageElement.textContent = message;
-    this.messageBox.appendChild(messageElement);
-    this.messageBox.scrollTop = this.messageBox.scrollHeight;
-  }
-
-  // 更新UI
-  updateUI() {
-    // 更新玩家信息
-    this.playersInfo.innerHTML = this.players
-      .map(
-        (player) => `
-      <div class="player-info" style="border-left: 4px solid ${
-        player.color
-      }; padding: 10px; margin: 5px 0;">
-        <div>${player.name} ${
-          player === this.currentPlayer ? "(当前回合)" : ""
-        }</div>
-        <div>资金: ￥${player.money}</div>
-        <div>房产: ${player.properties.length} 处</div>
-        <div>总资产: ￥${player.getTotalAssets()}</div>
-        ${
-          player.cards.length > 0
-            ? `<div>持有卡片: ${player.cards.join(", ")}</div>`
-            : ""
-        }
-      </div>
-    `
-      )
-      .join("");
-
-    // 更新按钮状态
-    const currentTile = this.board.tiles[this.currentPlayer.position];
-    this.buyPropertyButton.disabled =
-      !currentTile ||
-      currentTile.owner ||
-      (currentTile.type !== "property" &&
-        currentTile.type !== "railroad" &&
-        currentTile.type !== "utility") ||
-      this.currentPlayer.money < currentTile.price;
-
-    this.buildHouseButton.disabled =
-      !currentTile ||
-      currentTile.type !== "property" ||
-      currentTile.owner !== this.currentPlayer ||
-      currentTile.houses >= 3 ||
-      this.currentPlayer.money < currentTile.buildingCost ||
-      !this.currentPlayer.hasMonopoly(currentTile.color);
-
-    // 在掷骰子之前禁用结束回合按钮
-    if (this.rollDiceButton.disabled === false) {
-      this.endTurnButton.disabled = true;
-    }
-  }
-
-  // 获取当前玩家
   get currentPlayer() {
     return this.players[this.currentPlayerIndex];
   }
 
-  // 抽取机会卡
-  drawChanceCard() {
-    if (!this.cardSystem) {
-      console.error("卡牌系统未初始化");
-      return;
-    }
-    const card = this.cardSystem.drawChanceCard();
-    this.showMessage(
-      `${this.currentPlayer.name} 抽到机会卡：${card.description}`
-    );
-    card.action(this.currentPlayer, this);
-    this.endTurnButton.disabled = false;
+  // DOM binding
+  bindElements() {
+    this.startScreen = document.getElementById("start-screen");
+    this.gameScreen = document.getElementById("game-screen");
+    this.playerCountSelect = document.getElementById("player-count");
+    this.startButton = document.getElementById("start-game");
+    this.rollDiceBtn = document.getElementById("roll-dice");
+    this.buyBtn = document.getElementById("buy-property");
+    this.buildBtn = document.getElementById("build-house");
+    this.endTurnBtn = document.getElementById("end-turn");
+    this.messageBox = document.getElementById("message-box");
+    this.playersInfo = document.getElementById("players-info");
+    this.dice1El = document.getElementById("dice1");
+    this.dice2El = document.getElementById("dice2");
+    this.cardModal = document.getElementById("card-modal");
+    this.cardIcon = document.getElementById("card-icon");
+    this.cardTitle = document.getElementById("card-title");
+    this.cardDesc = document.getElementById("card-description");
+    this.cardOkBtn = document.getElementById("card-ok");
   }
 
-  // 抽取命运卡
-  drawFateCard() {
-    if (!this.cardSystem) {
-      console.error("卡牌系统未初始化");
+  bindEvents() {
+    this.startButton.addEventListener("click", () => this.startGame());
+    this.rollDiceBtn.addEventListener("click", () => this.rollDice());
+    this.buyBtn.addEventListener("click", () => this.buyProperty());
+    this.buildBtn.addEventListener("click", () => this.buildHouse());
+    this.endTurnBtn.addEventListener("click", () => this.endTurn());
+    this.cardOkBtn.addEventListener("click", () => this.closeCardModal());
+  }
+
+  // Start game
+  startGame() {
+    const count = parseInt(this.playerCountSelect.value);
+    const colors = ["#e53935", "#43a047", "#1e88e5", "#fdd835"];
+    const names = ["玩家1", "电脑2", "电脑3", "电脑4"];
+
+    this.players = [];
+    for (let i = 0; i < count; i++) {
+      this.players.push(
+        new Player({
+          id: i,
+          name: names[i],
+          color: colors[i],
+          money: this.INITIAL_MONEY,
+          isAI: i > 0,
+        })
+      );
+    }
+
+    this.board = new GameBoard();
+    this.cardSystem = new CardSystem();
+    this.currentPlayerIndex = 0;
+    this.gameStarted = true;
+
+    this.startScreen.classList.add("hidden");
+    this.gameScreen.classList.remove("hidden");
+
+    this.messageBox.innerHTML = "";
+    this.log("游戏开始！祝你好运！");
+    this.log(`${this.currentPlayer.name} 的回合，请投掷骰子`);
+
+    this.updateUI();
+    this.board.draw(this.players);
+    this.enableRoll();
+  }
+
+  // Logging
+  log(msg) {
+    const div = document.createElement("div");
+    div.textContent = msg;
+    this.messageBox.appendChild(div);
+    this.messageBox.scrollTop = this.messageBox.scrollHeight;
+  }
+
+  // Dice
+  rollDice() {
+    if (!this.gameStarted) return;
+    this.disableAllButtons();
+
+    const d1 = Math.floor(Math.random() * 6) + 1;
+    const d2 = Math.floor(Math.random() * 6) + 1;
+    this.lastDiceTotal = d1 + d2;
+    const isDoubles = d1 === d2;
+
+    // Animate dice
+    this.dice1El.classList.add("rolling");
+    this.dice2El.classList.add("rolling");
+
+    let rolls = 0;
+    const anim = setInterval(() => {
+      this.dice1El.textContent = DICE_FACES[Math.floor(Math.random() * 6)];
+      this.dice2El.textContent = DICE_FACES[Math.floor(Math.random() * 6)];
+      rolls++;
+      if (rolls > 8) {
+        clearInterval(anim);
+        this.dice1El.classList.remove("rolling");
+        this.dice2El.classList.remove("rolling");
+        this.dice1El.textContent = DICE_FACES[d1 - 1];
+        this.dice2El.textContent = DICE_FACES[d2 - 1];
+        this.afterDiceRoll(d1, d2, isDoubles);
+      }
+    }, 80);
+  }
+
+  afterDiceRoll(d1, d2, isDoubles) {
+    const player = this.currentPlayer;
+    const total = d1 + d2;
+    this.log(`${player.name} 掷出 ${d1} + ${d2} = ${total}`);
+
+    // Handle jail
+    if (player.inJail) {
+      if (isDoubles) {
+        player.releaseFromJail();
+        this.log(`${player.name} 掷出双数，出狱了！`);
+        this.movePlayerBy(player, total);
+      } else {
+        player.jailTurns++;
+        if (player.jailTurns >= 3) {
+          // Must pay to get out
+          const jailCard = player.cards.indexOf("免费出狱");
+          if (jailCard !== -1) {
+            player.cards.splice(jailCard, 1);
+            this.log(`${player.name} 使用免费出狱卡！`);
+          } else {
+            player.money -= this.JAIL_FEE;
+            this.log(`${player.name} 支付 ¥${this.JAIL_FEE} 出狱`);
+          }
+          player.releaseFromJail();
+          this.movePlayerBy(player, total);
+        } else {
+          this.log(`${player.name} 在监狱中（第${player.jailTurns}/3回合）`);
+          this.enableEndTurn();
+        }
+      }
       return;
     }
-    const card = this.cardSystem.drawFateCard();
-    this.showMessage(
-      `${this.currentPlayer.name} 抽到命运卡：${card.description}`
+
+    // Normal move
+    this.movePlayerBy(player, total);
+  }
+
+  movePlayerBy(player, steps) {
+    const oldPos = player.position;
+    const newPos = (player.position + steps) % TOTAL_TILES;
+
+    // Check if passed GO
+    if (newPos < oldPos && newPos !== 0) {
+      player.money += this.SALARY;
+      this.log(`${player.name} 经过起点，领取工资 ¥${this.SALARY}`);
+    }
+
+    player.position = newPos;
+    this.board.draw(this.players);
+    this.landOnTile(player);
+  }
+
+  // Land on a tile
+  landOnTile(player) {
+    const tile = this.board.tiles[player.position];
+    this.log(`${player.name} 到达「${tile.name}」`);
+
+    switch (tile.type) {
+      case "corner":
+        this.handleCorner(player, tile);
+        break;
+      case "property":
+      case "railroad":
+      case "utility":
+        this.handleProperty(player, tile);
+        break;
+      case "chance":
+        this.handleCard(player, "chance");
+        return; // card modal handles flow
+      case "fate":
+        this.handleCard(player, "fate");
+        return;
+      case "tax":
+        player.money -= tile.taxAmount;
+        this.log(`${player.name} 缴纳${tile.name} ¥${tile.taxAmount}`);
+        this.checkBankruptcy(player);
+        this.enableEndTurn();
+        break;
+      default:
+        this.enableEndTurn();
+    }
+    this.updateUI();
+  }
+
+  handleCorner(player, tile) {
+    if (tile.name === "起点") {
+      player.money += this.SALARY;
+      this.log(`${player.name} 停在起点，额外获得 ¥${this.SALARY}`);
+    } else if (tile.name === "去监狱") {
+      player.goToJail();
+      this.log(`${player.name} 被送进监狱！`);
+      this.board.draw(this.players);
+    } else if (tile.name === "监狱") {
+      this.log(`${player.name} 只是路过监狱探望`);
+    } else {
+      this.log(`${player.name} 在免费停车休息`);
+    }
+    this.enableEndTurn();
+  }
+
+  handleProperty(player, tile) {
+    if (!tile.owner) {
+      // Unowned - can buy
+      if (player.money >= tile.price) {
+        this.awaitingAction = true;
+        if (player.isAI) {
+          if (player.shouldBuy(tile)) {
+            this.buyProperty();
+          } else {
+            this.enableEndTurn();
+          }
+        } else {
+          this.buyBtn.disabled = false;
+          this.endTurnBtn.disabled = false;
+          this.log(`「${tile.name}」无人拥有，售价 ¥${tile.price}，是否购买？`);
+        }
+      } else {
+        this.log(`资金不足，无法购买「${tile.name}」`);
+        this.enableEndTurn();
+      }
+    } else if (tile.owner === player) {
+      // Own property - maybe build
+      if (
+        tile.type === "property" &&
+        tile.houses < 5 &&
+        player.hasMonopoly(tile.colorGroup) &&
+        player.money >= tile.buildCost
+      ) {
+        if (player.isAI) {
+          if (player.shouldBuild(tile)) {
+            this.buildHouse();
+          } else {
+            this.enableEndTurn();
+          }
+        } else {
+          this.buildBtn.disabled = false;
+          this.endTurnBtn.disabled = false;
+          this.log(`你拥有「${tile.name}」，可以建造房屋（¥${tile.buildCost}）`);
+        }
+      } else {
+        this.enableEndTurn();
+      }
+    } else {
+      // Pay rent
+      this.payRent(player, tile);
+    }
+  }
+
+  payRent(player, tile) {
+    // Check free pass card
+    const freeIdx = player.cards.indexOf("免费通行");
+    if (freeIdx !== -1) {
+      player.cards.splice(freeIdx, 1);
+      this.log(`${player.name} 使用免费通行卡，免除租金！`);
+      this.enableEndTurn();
+      return;
+    }
+
+    const rent = tile.getRent();
+    if (rent <= 0) {
+      this.enableEndTurn();
+      return;
+    }
+
+    player.money -= rent;
+    tile.owner.money += rent;
+    this.log(
+      `${player.name} 支付租金 ¥${rent} 给 ${tile.owner.name}`
     );
-    card.action(this.currentPlayer, this);
-    this.endTurnButton.disabled = false;
+
+    if (player.money < 0) {
+      this.handleBankruptcy(player, tile.owner);
+    } else {
+      this.enableEndTurn();
+    }
+    this.updateUI();
+  }
+
+  // Cards
+  handleCard(player, type) {
+    const card =
+      type === "chance"
+        ? this.cardSystem.drawChance()
+        : this.cardSystem.drawFate();
+
+    // Show modal
+    this.cardIcon.textContent = card.icon;
+    this.cardTitle.textContent = card.name;
+    this.cardDesc.textContent = card.desc;
+    this.cardModal.classList.remove("hidden");
+
+    this._pendingCard = card;
+    this._pendingCardPlayer = player;
+
+    if (player.isAI) {
+      setTimeout(() => this.closeCardModal(), 1200);
+    }
+  }
+
+  closeCardModal() {
+    this.cardModal.classList.add("hidden");
+    const card = this._pendingCard;
+    const player = this._pendingCardPlayer;
+    if (card && player) {
+      card.action(player, this);
+      this._pendingCard = null;
+      this._pendingCardPlayer = null;
+
+      if (player.money < 0) {
+        this.handleBankruptcy(player, null);
+      }
+
+      this.board.draw(this.players);
+      this.updateUI();
+      this.enableEndTurn();
+    }
+  }
+
+  // Buy property
+  buyProperty() {
+    const player = this.currentPlayer;
+    const tile = this.board.tiles[player.position];
+
+    if (tile.owner || player.money < tile.price) return;
+
+    player.money -= tile.price;
+    player.addProperty(tile);
+    this.log(
+      `${player.name} 购买了「${tile.name}」，花费 ¥${tile.price}`
+    );
+
+    this.buyBtn.disabled = true;
+    this.board.draw(this.players);
+    this.updateUI();
+    this.enableEndTurn();
+  }
+
+  // Build house
+  buildHouse() {
+    const player = this.currentPlayer;
+    const tile = this.board.tiles[player.position];
+
+    if (
+      tile.type !== "property" ||
+      tile.owner !== player ||
+      tile.houses >= 5 ||
+      !player.hasMonopoly(tile.colorGroup) ||
+      player.money < tile.buildCost
+    ) {
+      return;
+    }
+
+    player.money -= tile.buildCost;
+    tile.houses++;
+    const label = tile.houses >= 5 ? "酒店" : `${tile.houses}座房屋`;
+    this.log(
+      `${player.name} 在「${tile.name}」建造了房屋（${label}），花费 ¥${tile.buildCost}`
+    );
+
+    this.buildBtn.disabled = true;
+    this.board.draw(this.players);
+    this.updateUI();
+    this.enableEndTurn();
+  }
+
+  // Bankruptcy
+  handleBankruptcy(player, creditor) {
+    player.bankrupt = true;
+    this.log(`💀 ${player.name} 破产了！`);
+
+    if (creditor) {
+      player.properties.forEach((prop) => {
+        prop.owner = creditor;
+        creditor.properties.push(prop);
+      });
+      creditor.money += Math.max(0, player.money);
+      this.log(`${player.name} 的资产转移给 ${creditor.name}`);
+    }
+
+    player.properties = [];
+    player.money = 0;
+
+    // Check win condition
+    const alive = this.players.filter((p) => !p.bankrupt);
+    if (alive.length === 1) {
+      this.gameOver(alive[0]);
+      return;
+    }
+
+    this.updateUI();
+    this.board.draw(this.players);
+  }
+
+  checkBankruptcy(player) {
+    if (player.money < 0) {
+      this.handleBankruptcy(player, null);
+    }
+  }
+
+  // Game over
+  gameOver(winner) {
+    this.gameStarted = false;
+    this.log(`🏆 游戏结束！${winner.name} 获得胜利！`);
+    this.log(`最终资产: ¥${winner.getTotalAssets()}`);
+
+    this.disableAllButtons();
+
+    const btn = document.createElement("button");
+    btn.textContent = "重新开始";
+    btn.style.marginTop = "10px";
+    btn.onclick = () => window.location.reload();
+    this.messageBox.appendChild(btn);
+  }
+
+  // End turn
+  endTurn() {
+    if (!this.gameStarted) return;
+    this.disableAllButtons();
+
+    // Find next non-bankrupt player
+    let next = (this.currentPlayerIndex + 1) % this.players.length;
+    let safety = 0;
+    while (this.players[next].bankrupt && safety < this.players.length) {
+      next = (next + 1) % this.players.length;
+      safety++;
+    }
+    this.currentPlayerIndex = next;
+
+    const player = this.currentPlayer;
+    this.log(`--- ${player.name} 的回合 ---`);
+    this.updateUI();
+
+    if (player.isAI) {
+      setTimeout(() => this.playAITurn(), 800);
+    } else {
+      if (player.inJail) {
+        this.log(`你在监狱中（第${player.jailTurns}/3回合），投掷双数可出狱`);
+      }
+      this.enableRoll();
+    }
+  }
+
+  // AI turn
+  playAITurn() {
+    if (!this.gameStarted) return;
+    this.rollDice();
+  }
+
+  // Button helpers
+  enableRoll() {
+    this.rollDiceBtn.disabled = false;
+    this.buyBtn.disabled = true;
+    this.buildBtn.disabled = true;
+    this.endTurnBtn.disabled = true;
+  }
+
+  enableEndTurn() {
+    this.rollDiceBtn.disabled = true;
+    this.endTurnBtn.disabled = false;
+
+    // AI auto-ends turn
+    if (this.currentPlayer.isAI) {
+      setTimeout(() => {
+        if (this.gameStarted && !this.endTurnBtn.disabled) {
+          this.endTurn();
+        }
+      }, 600);
+    }
+  }
+
+  disableAllButtons() {
+    this.rollDiceBtn.disabled = true;
+    this.buyBtn.disabled = true;
+    this.buildBtn.disabled = true;
+    this.endTurnBtn.disabled = true;
+  }
+
+  // Update UI
+  updateUI() {
+    if (!this.board) return;
+
+    this.playersInfo.innerHTML = this.players
+      .filter((p) => !p.bankrupt)
+      .map((p) => {
+        const isCurrent = p === this.currentPlayer;
+        const propCount = p.properties.length;
+        const houses = p.properties.reduce((s, t) => s + t.houses, 0);
+        return `
+          <div class="player-info ${isCurrent ? "active" : ""}"
+               style="border-left-color: ${p.color}">
+            <div class="player-name">
+              ${p.isAI ? "🤖" : "👤"} ${p.name}
+              ${isCurrent ? " ◀" : ""}
+              ${p.inJail ? " 🔒" : ""}
+            </div>
+            <div class="player-money">¥${p.money.toLocaleString()}</div>
+            <div class="player-detail">
+              地产 ${propCount} | 房屋 ${houses} | 总资产 ¥${p.getTotalAssets().toLocaleString()}
+            </div>
+            ${p.cards.length > 0 ? `<div class="player-detail">卡片: ${p.cards.join(", ")}</div>` : ""}
+          </div>
+        `;
+      })
+      .join("");
   }
 }
