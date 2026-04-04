@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>火柴人乱斗</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#1a1a2e;display:flex;justify-content:center;align-items:center;
+      min-height:100vh;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,
+      "PingFang SC","Microsoft YaHei",sans-serif;touch-action:none;color:#fff}
+    canvas{display:block}
+    .ov{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;
+      flex-direction:column;justify-content:center;align-items:center;z-index:10;
+      pointer-events:none}
+    .ov.on{pointer-events:auto}
+    .ov-bg{position:absolute;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,.75);opacity:0;transition:opacity .3s}
+    .ov.on .ov-bg{opacity:1}
+    .ov-box{position:relative;z-index:1;text-align:center;padding:24px;
+      transform:scale(.85);opacity:0;transition:all .3s}
+    .ov.on .ov-box{transform:scale(1);opacity:1}
+    .ov h1{font-size:2.4em;margin-bottom:6px}
+    .ov h2{font-size:1.6em;margin-bottom:12px}
+    .ov p{color:rgba(255,255,255,.65);margin:4px 0;font-size:.92em;line-height:1.6}
+    .ov .big{font-size:1.2em;color:#ffd200;margin:12px 0}
+    .ov .rec{color:#ff6ba0;margin-bottom:16px;min-height:1.3em}
+    .ov button{padding:13px 40px;font-size:1.1em;font-weight:700;border:none;
+      border-radius:14px;background:linear-gradient(135deg,#f7971e,#ffd200);
+      color:#1a1a2e;cursor:pointer;margin:6px;box-shadow:0 6px 18px rgba(247,151,30,.3);
+      transition:all .2s}
+    .ov button:hover{transform:translateY(-2px)}
+    .ov button:active{transform:translateY(0)}
+    .controls-hint{position:fixed;bottom:12px;left:0;width:100%;text-align:center;
+      font-size:.78em;color:rgba(255,255,255,.3);z-index:5;pointer-events:none}
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="menu" class="ov on">
+  <div class="ov-bg"></div>
+  <div class="ov-box">
+    <h1>🥊 火柴人乱斗</h1>
+    <p>操控火柴人击败所有敌人！</p>
+    <p>📱 手机：左侧摇杆移动，右侧按钮攻击/跳跃</p>
+    <p>⌨️ 键盘：WASD/方向键移动，J攻击，K跳跃</p>
+    <button onclick="game.begin()">开始游戏</button>
+  </div>
+</div>
+
+<div id="win" class="ov">
+  <div class="ov-bg"></div>
+  <div class="ov-box">
+    <h2>🏆 胜利！</h2>
+    <div class="big" id="win-wave"></div>
+    <button onclick="game.nextWave()">下一波</button>
+  </div>
+</div>
+
+<div id="lose" class="ov">
+  <div class="ov-bg"></div>
+  <div class="ov-box">
+    <h2>💀 失败</h2>
+    <div class="big" id="lose-score"></div>
+    <div class="rec" id="lose-rec"></div>
+    <button onclick="game.begin()">重新开始</button>
+  </div>
+</div>
+
+<div class="controls-hint" id="hint">左侧滑动移动 | 右侧上方跳跃 下方攻击</div>
+
+<script src="game.js"></script>
+</body>
+</html>
