@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>六边形消消塔</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: #0b0b1e;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      display: flex; justify-content: center; align-items: flex-start;
+      min-height: 100vh; overflow: hidden; color: #fff;
+      touch-action: none;
+    }
+    #app { width: 100%; height: 100vh; position: relative; }
+    canvas { display: block; width: 100%; height: 100%; }
+
+    .overlay {
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      display:flex; flex-direction:column; justify-content:center; align-items:center;
+      z-index:10; pointer-events:none;
+    }
+    .overlay.active { pointer-events:auto; }
+    .overlay-bg {
+      position:absolute; top:0; left:0; width:100%; height:100%;
+      background:rgba(0,0,0,0.75); opacity:0; transition: opacity 0.3s;
+    }
+    .overlay.active .overlay-bg { opacity:1; }
+    .overlay-box {
+      position:relative; z-index:1; text-align:center; padding:30px;
+      transform:scale(0.85); opacity:0; transition: all 0.3s;
+    }
+    .overlay.active .overlay-box { transform:scale(1); opacity:1; }
+    .overlay h1 { font-size:2.5em; margin-bottom:8px; }
+    .overlay h2 { font-size:1.6em; margin-bottom:12px; }
+    .overlay p { color:rgba(255,255,255,0.7); margin-bottom:5px; font-size:0.95em; line-height:1.6; }
+    .overlay .big { font-size:1.3em; color:#ffd200; margin:14px 0; }
+    .overlay .record { font-size:1em; color:#ff6ba0; margin-bottom:18px; min-height:1.3em; }
+    .overlay button {
+      padding:14px 48px; font-size:1.1em; font-weight:700; border:none;
+      border-radius:14px; background:linear-gradient(135deg,#f7971e,#ffd200);
+      color:#1a1a2e; cursor:pointer; transition:all 0.2s;
+      box-shadow:0 6px 20px rgba(247,151,30,0.3); margin-top:6px;
+    }
+    .overlay button:hover { transform:translateY(-2px); }
+    .overlay button:active { transform:translateY(0); }
+  </style>
+</head>
+<body>
+<div id="app">
+  <canvas id="c"></canvas>
+
+  <div id="start-overlay" class="overlay active">
+    <div class="overlay-bg"></div>
+    <div class="overlay-box">
+      <h1>⬡ 六边形消消塔</h1>
+      <p>点击积木消除，上方积木会坠落</p>
+      <p>⬡ 每消一块得 1 分</p>
+      <p>📦 每 50 层为一关</p>
+      <p>🏆 挑战最高纪录</p>
+      <button onclick="game.start()">开始游戏</button>
+    </div>
+  </div>
+
+  <div id="level-overlay" class="overlay">
+    <div class="overlay-bg"></div>
+    <div class="overlay-box">
+      <h2 id="level-title"></h2>
+      <div class="big" id="level-score"></div>
+      <button onclick="game.nextLevel()">下一关</button>
+    </div>
+  </div>
+
+  <div id="over-overlay" class="overlay">
+    <div class="overlay-bg"></div>
+    <div class="overlay-box">
+      <h2>游戏结束</h2>
+      <div class="big" id="final-score"></div>
+      <div class="record" id="final-record"></div>
+      <button onclick="game.start()">再来一次</button>
+    </div>
+  </div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
