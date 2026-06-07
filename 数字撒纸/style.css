@@ -151,46 +151,26 @@ body {
   overflow: hidden;
 }
 
-/* A4 纸张：始终保持真实 A4 尺寸（用于打印），屏幕上通过 transform 缩放 */
+/* A4 纸张：canvas 始终保持真实 A4 尺寸，屏幕上通过 transform 缩放 */
 .page {
+  display: block;
   width: 210mm;
   height: 297mm;
   background: #fff;
-  position: relative;
   transform: scale(var(--scale));
   transform-origin: top left;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
 }
 
-/* 散布的数字 */
-.num {
-  position: absolute;
-  line-height: 1;
-  white-space: nowrap;
-  font-weight: 700;
-  color: #111827;
-  user-select: none;
+/* ===== 打印用图片容器：屏幕上隐藏 ===== */
+#printArea {
+  display: none;
 }
 
-/* ===== 6×6 方格 ===== */
-.grid-page {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  grid-template-rows: repeat(6, 1fr);
-  padding: 12mm;
-}
-
-.grid-page .cell {
-  border: 1.5px solid #111827;
-}
-
-/* 合并相邻边框 */
-.grid-page .cell {
-  margin: -0.75px;
-}
-
-/* ===== 打印 ===== */
+/* ===== 打印 =====
+   打印时只显示 #printArea 里的那一张图片（由 JS 设置成数字纸或方格纸的图），
+   其它所有内容全部隐藏。这是静态规则，不依赖动态切换 class/display，
+   再加上「打印的是图片」，所以不会被刷新/重绘搞乱。 */
 @media print {
   @page {
     size: A4;
@@ -204,43 +184,19 @@ body {
     background: #fff;
   }
 
-  #controls,
-  .page-label,
-  .page-print-btn {
+  body > *:not(#printArea) {
     display: none !important;
   }
 
-  #preview {
+  #printArea {
+    display: block !important;
+  }
+
+  /* 图片缩到 94% 并居中，留出安全边距，避免溢出到第二页 */
+  #printArea img {
     display: block;
-    margin: 0;
-    padding: 0;
-    gap: 0;
-  }
-
-  .page-block {
-    margin: 0;
-    padding: 0;
-  }
-
-  /* 打印时整页缩到 94% 并居中，留出安全边距，
-     避免满幅内容因打印机可打印区域略小于 A4 而溢出到第二页 */
-  .scaler {
-    width: calc(210mm * 0.94) !important;
-    height: calc(297mm * 0.94) !important;
-    margin: 8mm auto 0 !important;
-    overflow: visible;
-  }
-
-  .page {
-    transform: scale(0.94) !important;
-    transform-origin: top left;
-    box-shadow: none !important;
-  }
-
-  /* 直接通过系统打印（未点按钮）时，默认只出数字纸。
-     注意：这里不加 !important，方便点击按钮时用内联样式覆盖，
-     从而可靠地控制打印数字纸还是方格纸（兼容 iOS）。 */
-  #gridWrap {
-    display: none;
+    width: calc(210mm * 0.94);
+    height: calc(297mm * 0.94);
+    margin: 8mm auto 0;
   }
 }
