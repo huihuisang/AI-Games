@@ -208,16 +208,32 @@ function fitScale() {
 window.addEventListener("resize", fitScale);
 
 // ===== 打印 =====
+// 用内联样式（而非动态 class）控制打印哪一页，兼容 iOS：
+// iOS Safari 在 window.print() 时不一定识别刚加到 body 上的 class，
+// 但一定会读取元素的内联 display。
 function printPage(which) {
-  const body = document.body;
-  body.classList.remove("print-scatter", "print-grid");
-  body.classList.add(which === "scatter" ? "print-scatter" : "print-grid");
+  const scatter = $("scatterWrap");
+  const grid = $("gridWrap");
+
+  if (which === "grid") {
+    scatter.style.display = "none";
+    grid.style.display = "flex";
+  } else {
+    scatter.style.display = "flex";
+    grid.style.display = "none";
+  }
+
+  const restore = () => {
+    scatter.style.display = "";
+    grid.style.display = "";
+  };
+  // 打印结束后恢复屏幕显示；afterprint 在部分浏览器不触发，用定时器兜底。
+  // 移动端在 print() 调用时已完成快照，延迟恢复不会影响打印内容。
+  window.addEventListener("afterprint", restore, { once: true });
+  setTimeout(restore, 1500);
+
   window.print();
 }
-
-window.addEventListener("afterprint", () => {
-  document.body.classList.remove("print-scatter", "print-grid");
-});
 
 // ===== 绑定事件 =====
 $("genBtn").addEventListener("click", generateScatter);
