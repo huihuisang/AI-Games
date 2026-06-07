@@ -225,17 +225,10 @@ body {
     box-shadow: none !important;
   }
 
-  /* 默认只打印数字纸（一张 A4），不产生多余的空白页；
-     点「打印 6×6 方格纸」时改为只打印方格纸 */
+  /* 直接通过系统打印（未点按钮）时，默认只出数字纸。
+     注意：这里不加 !important，方便点击按钮时用内联样式覆盖，
+     从而可靠地控制打印数字纸还是方格纸（兼容 iOS）。 */
   #gridWrap {
-    display: none !important;
-  }
-
-  body.print-grid #gridWrap {
-    display: flex !important;
-  }
-
-  body.print-grid #scatterWrap {
-    display: none !important;
+    display: none;
   }
 }
