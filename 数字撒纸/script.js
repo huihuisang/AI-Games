@@ -223,22 +223,43 @@ function printPage(which) {
     grid.style.display = "none";
   }
 
-  const restore = () => {
+  // 关键：不要用定时器恢复显示！
+  // iOS 的打印预览会跟随页面 DOM 实时重绘，如果在打印面板还开着时
+  // 把显示状态恢复成默认（数字纸），预览就会变回数字纸。
+  // 因此只在「用户从打印面板回到页面后」才恢复：afterprint / 重新获得焦点 / 重新可见。
+  let restored = false;
+  const onVisible = () => {
+    if (document.visibilityState === "visible") restore();
+  };
+  function restore() {
+    if (restored) return;
+    restored = true;
     scatter.style.display = "";
     grid.style.display = "";
-  };
-  // 打印结束后恢复屏幕显示；afterprint 在部分浏览器不触发，用定时器兜底。
-  // 移动端在 print() 调用时已完成快照，延迟恢复不会影响打印内容。
-  window.addEventListener("afterprint", restore, { once: true });
-  setTimeout(restore, 1500);
+    window.removeEventListener("afterprint", restore);
+    window.removeEventListener("focus", restore);
+    document.removeEventListener("visibilitychange", onVisible);
+  }
+  window.addEventListener("afterprint", restore);
+  window.addEventListener("focus", restore);
+  document.addEventListener("visibilitychange", onVisible);
 
   window.print();
 }
 
 // ===== 绑定事件 =====
-$("genBtn").addEventListener("click", generateScatter);
-$("printScatterBtn").addEventListener("click", () => printPage("scatter"));
-$("printGridBtn").addEventListener("click", () => printPage("grid"));
+$("genBtn").addEventListener("click", (e) => {
+  e.preventDefault();
+  generateScatter();
+});
+$("printScatterBtn").addEventListener("click", (e) => {
+  e.preventDefault();
+  printPage("scatter");
+});
+$("printGridBtn").addEventListener("click", (e) => {
+  e.preventDefault();
+  printPage("grid");
+});
 $("gridRows").addEventListener("input", buildGrid);
 $("gridCols").addEventListener("input", buildGrid);
 
