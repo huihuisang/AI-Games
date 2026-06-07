@@ -208,81 +208,42 @@ function fitScale() {
 window.addEventListener("resize", fitScale);
 
 // ===== 打印 =====
-// 关键做法：不去显示/隐藏主页面的元素（那样会被「点击导致的刷新」或
-// iOS 打印预览实时重绘干扰，导致打印方格纸却出数字）。
-// 而是把要打印的那一张纸单独写进一个隐藏 iframe 里打印——iframe 内容
-// 独立且静态，主页面刷不刷新、怎么重绘都不会影响它。
-const PRINT_STYLE = `
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  @page { size: A4; margin: 0; }
-  html, body {
-    margin: 0;
-    background: #fff;
-    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
-  }
-  /* 缩到 94% 并居中，留安全边距，避免溢出到第二页 */
-  .scaler {
-    width: calc(210mm * 0.94);
-    height: calc(297mm * 0.94);
-    margin: 8mm auto 0;
-    overflow: hidden;
-  }
-  .page {
-    width: 210mm;
-    height: 297mm;
-    position: relative;
-    overflow: hidden;
-    background: #fff;
-    transform: scale(0.94);
-    transform-origin: top left;
-  }
-  .num {
-    position: absolute;
-    line-height: 1;
-    white-space: nowrap;
-    font-weight: 700;
-    color: #111827;
-  }
-  .grid-page { display: grid; padding: 12mm; }
-  .grid-page .cell { border: 1.5px solid #111827; margin: -0.75px; }
-`;
-
+// 直接打印主窗口（主窗口一定能渲染出内容），用内联 display 控制打印哪一页。
+// 不再用 iframe（iOS 上隐藏 iframe 打印会变空白），也不用定时器恢复
+//（iOS 打印预览跟随 DOM 实时重绘，过早恢复会变回默认）。
+// 刷新问题已由按钮 type="button" + preventDefault 根治。
 function printPage(which) {
-  const pageEl = which === "grid" ? $("gridPage") : $("scatterPage");
+  const scatter = $("scatterWrap");
+  const grid = $("gridWrap");
 
-  const iframe = document.createElement("iframe");
-  iframe.setAttribute("aria-hidden", "true");
-  iframe.style.cssText =
-    "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;";
-  document.body.appendChild(iframe);
+  if (which === "grid") {
+    scatter.style.display = "none";
+    grid.style.display = "flex";
+  } else {
+    scatter.style.display = "flex";
+    grid.style.display = "none";
+  }
 
-  const doc = iframe.contentWindow.document;
-  doc.open();
-  doc.write(
-    `<!DOCTYPE html><html><head><meta charset="utf-8">` +
-      `<style>${PRINT_STYLE}</style></head><body>` +
-      `<div class="scaler">${pageEl.outerHTML}</div>` +
-      `</body></html>`
-  );
-  doc.close();
-
-  const cleanup = () => {
-    if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+  // 仅在用户从打印面板「回到页面后」才恢复显示，
+  // 这样打印面板开着的整个过程，所选的那张纸都稳定显示。
+  let restored = false;
+  const onVisible = () => {
+    if (document.visibilityState === "visible") restore();
   };
+  function restore() {
+    if (restored) return;
+    restored = true;
+    scatter.style.display = "";
+    grid.style.display = "";
+    window.removeEventListener("afterprint", restore);
+    window.removeEventListener("focus", restore);
+    document.removeEventListener("visibilitychange", onVisible);
+  }
+  window.addEventListener("afterprint", restore);
+  window.addEventListener("focus", restore);
+  document.addEventListener("visibilitychange", onVisible);
 
-  // 等 iframe 内容渲染、字体就绪后再打印
-  setTimeout(() => {
-    try {
-      iframe.contentWindow.focus();
-      iframe.contentWindow.print();
-    } catch (e) {
-      /* 忽略 */
-    }
-    // 打印结束后清理 iframe（afterprint 不一定触发，用较长延时兜底）
-    const win = iframe.contentWindow;
-    if (win) win.addEventListener("afterprint", cleanup, { once: true });
-    setTimeout(cleanup, 60000);
-  }, 350);
+  window.print();
 }
 
 // ===== 绑定事件 =====
