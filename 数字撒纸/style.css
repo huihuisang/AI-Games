@@ -133,6 +133,17 @@ body {
   color: #6b7280;
 }
 
+/* 每张纸下面各自的打印按钮 */
+.page-print-btn {
+  margin-top: 14px;
+  background: #2563eb;
+  color: #fff;
+}
+
+.page-print-btn:hover {
+  background: #1d4ed8;
+}
+
 /* 缩放容器：预留缩放后的尺寸，避免出现大片空白 */
 .scaler {
   width: calc(210mm * var(--scale));
@@ -194,7 +205,8 @@ body {
   }
 
   #controls,
-  .page-label {
+  .page-label,
+  .page-print-btn {
     display: none !important;
   }
 
