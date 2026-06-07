@@ -1,0 +1,229 @@
+:root {
+  --scale: 0.6; /* 屏幕预览缩放比例 */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  background: #f0f2f5;
+  color: #1f2937;
+}
+
+/* ===== 控制面板 ===== */
+#controls {
+  max-width: 760px;
+  margin: 24px auto 8px;
+  padding: 20px 24px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+
+#controls h1 {
+  margin: 0 0 6px;
+  font-size: 26px;
+}
+
+.tip {
+  margin: 0 0 16px;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.row label {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  color: #374151;
+  gap: 4px;
+}
+
+.row label.check {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.row input[type="number"] {
+  width: 130px;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.status {
+  font-size: 13px;
+  color: #2563eb;
+}
+
+.btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #e5e7eb;
+  color: #111827;
+  font-size: 15px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.05s, background 0.2s;
+}
+
+.btn:hover {
+  background: #d1d5db;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn.primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.btn.primary:hover {
+  background: #1d4ed8;
+}
+
+.btn.ghost {
+  background: transparent;
+  color: #6b7280;
+}
+
+/* ===== 预览区 ===== */
+#preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  justify-content: center;
+  padding: 16px 16px 60px;
+}
+
+.page-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.page-label {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* 缩放容器：预留缩放后的尺寸，避免出现大片空白 */
+.scaler {
+  width: calc(210mm * var(--scale));
+  height: calc(297mm * var(--scale));
+  overflow: hidden;
+}
+
+/* A4 纸张：始终保持真实 A4 尺寸（用于打印），屏幕上通过 transform 缩放 */
+.page {
+  width: 210mm;
+  height: 297mm;
+  background: #fff;
+  position: relative;
+  transform: scale(var(--scale));
+  transform-origin: top left;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+/* 散布的数字 */
+.num {
+  position: absolute;
+  line-height: 1;
+  white-space: nowrap;
+  font-weight: 700;
+  color: #111827;
+  user-select: none;
+}
+
+/* ===== 6×6 方格 ===== */
+.grid-page {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  padding: 12mm;
+}
+
+.grid-page .cell {
+  border: 1.5px solid #111827;
+}
+
+/* 合并相邻边框 */
+.grid-page .cell {
+  margin: -0.75px;
+}
+
+/* ===== 打印 ===== */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  #controls,
+  .page-label {
+    display: none !important;
+  }
+
+  #preview {
+    display: block;
+    padding: 0;
+    gap: 0;
+  }
+
+  /* 打印时取消缩放，使用真实 A4 尺寸 */
+  .scaler {
+    width: auto;
+    height: auto;
+    overflow: visible;
+  }
+
+  .page {
+    transform: none !important;
+    box-shadow: none !important;
+    margin: 0;
+  }
+
+  /* 根据打印目标隐藏另一页 */
+  body.print-scatter #gridWrap {
+    display: none !important;
+  }
+
+  body.print-grid #scatterWrap {
+    display: none !important;
+  }
+
+  .page-block {
+    page-break-after: always;
+  }
+}

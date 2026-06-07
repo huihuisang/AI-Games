@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>数字撒纸 · 随机数字铺满 A4 打印</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- 控制面板 -->
+    <div id="controls">
+      <h1>🎲 数字撒纸</h1>
+      <p class="tip">
+        输入两个数字作为范围，点击「随机生成」把大小、角度都不一样的数字铺满 A4
+        纸，数字之间留有间距、不会重叠。生成后可以直接打印；也可以单独打印一张 6×6 的方格纸。
+      </p>
+
+      <div class="row">
+        <label>最小值<input type="number" id="minVal" value="1" /></label>
+        <label>最大值<input type="number" id="maxVal" value="99" /></label>
+        <label>数量
+          <input type="number" id="countVal" min="0" placeholder="留空=铺满" />
+        </label>
+      </div>
+
+      <div class="row">
+        <label>最小字号
+          <input type="number" id="fontMin" value="26" min="10" />
+        </label>
+        <label>最大字号
+          <input type="number" id="fontMax" value="70" min="10" />
+        </label>
+        <label>间距
+          <input type="number" id="gapVal" value="14" min="0" />
+        </label>
+      </div>
+
+      <div class="row">
+        <label class="check">
+          <input type="checkbox" id="colorChk" /> 彩色数字
+        </label>
+        <span id="status" class="status"></span>
+      </div>
+
+      <div class="btns">
+        <button id="genBtn" class="btn primary">🎲 随机生成</button>
+        <button id="printScatterBtn" class="btn">🖨️ 打印数字纸</button>
+        <button id="printGridBtn" class="btn">🖨️ 打印 6×6 方格纸</button>
+        <a href="../index.html" class="btn ghost">← 返回首页</a>
+      </div>
+    </div>
+
+    <!-- 预览区 -->
+    <div id="preview">
+      <!-- 散布数字页 -->
+      <div class="page-block" id="scatterWrap">
+        <div class="page-label">数字纸（A4）</div>
+        <div class="scaler">
+          <div class="page" id="scatterPage"></div>
+        </div>
+      </div>
+
+      <!-- 6×6 方格页 -->
+      <div class="page-block" id="gridWrap">
+        <div class="page-label">6 × 6 方格纸（A4）</div>
+        <div class="scaler">
+          <div class="page grid-page" id="gridPage"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
