@@ -208,43 +208,81 @@ function fitScale() {
 window.addEventListener("resize", fitScale);
 
 // ===== 打印 =====
-// 用内联样式（而非动态 class）控制打印哪一页，兼容 iOS：
-// iOS Safari 在 window.print() 时不一定识别刚加到 body 上的 class，
-// 但一定会读取元素的内联 display。
+// 关键做法：不去显示/隐藏主页面的元素（那样会被「点击导致的刷新」或
+// iOS 打印预览实时重绘干扰，导致打印方格纸却出数字）。
+// 而是把要打印的那一张纸单独写进一个隐藏 iframe 里打印——iframe 内容
+// 独立且静态，主页面刷不刷新、怎么重绘都不会影响它。
+const PRINT_STYLE = `
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  @page { size: A4; margin: 0; }
+  html, body {
+    margin: 0;
+    background: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  }
+  /* 缩到 94% 并居中，留安全边距，避免溢出到第二页 */
+  .scaler {
+    width: calc(210mm * 0.94);
+    height: calc(297mm * 0.94);
+    margin: 8mm auto 0;
+    overflow: hidden;
+  }
+  .page {
+    width: 210mm;
+    height: 297mm;
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+    transform: scale(0.94);
+    transform-origin: top left;
+  }
+  .num {
+    position: absolute;
+    line-height: 1;
+    white-space: nowrap;
+    font-weight: 700;
+    color: #111827;
+  }
+  .grid-page { display: grid; padding: 12mm; }
+  .grid-page .cell { border: 1.5px solid #111827; margin: -0.75px; }
+`;
+
 function printPage(which) {
-  const scatter = $("scatterWrap");
-  const grid = $("gridWrap");
+  const pageEl = which === "grid" ? $("gridPage") : $("scatterPage");
 
-  if (which === "grid") {
-    scatter.style.display = "none";
-    grid.style.display = "flex";
-  } else {
-    scatter.style.display = "flex";
-    grid.style.display = "none";
-  }
+  const iframe = document.createElement("iframe");
+  iframe.setAttribute("aria-hidden", "true");
+  iframe.style.cssText =
+    "position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;";
+  document.body.appendChild(iframe);
 
-  // 关键：不要用定时器恢复显示！
-  // iOS 的打印预览会跟随页面 DOM 实时重绘，如果在打印面板还开着时
-  // 把显示状态恢复成默认（数字纸），预览就会变回数字纸。
-  // 因此只在「用户从打印面板回到页面后」才恢复：afterprint / 重新获得焦点 / 重新可见。
-  let restored = false;
-  const onVisible = () => {
-    if (document.visibilityState === "visible") restore();
+  const doc = iframe.contentWindow.document;
+  doc.open();
+  doc.write(
+    `<!DOCTYPE html><html><head><meta charset="utf-8">` +
+      `<style>${PRINT_STYLE}</style></head><body>` +
+      `<div class="scaler">${pageEl.outerHTML}</div>` +
+      `</body></html>`
+  );
+  doc.close();
+
+  const cleanup = () => {
+    if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
   };
-  function restore() {
-    if (restored) return;
-    restored = true;
-    scatter.style.display = "";
-    grid.style.display = "";
-    window.removeEventListener("afterprint", restore);
-    window.removeEventListener("focus", restore);
-    document.removeEventListener("visibilitychange", onVisible);
-  }
-  window.addEventListener("afterprint", restore);
-  window.addEventListener("focus", restore);
-  document.addEventListener("visibilitychange", onVisible);
 
-  window.print();
+  // 等 iframe 内容渲染、字体就绪后再打印
+  setTimeout(() => {
+    try {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    } catch (e) {
+      /* 忽略 */
+    }
+    // 打印结束后清理 iframe（afterprint 不一定触发，用较长延时兜底）
+    const win = iframe.contentWindow;
+    if (win) win.addEventListener("afterprint", cleanup, { once: true });
+    setTimeout(cleanup, 60000);
+  }, 350);
 }
 
 // ===== 绑定事件 =====
