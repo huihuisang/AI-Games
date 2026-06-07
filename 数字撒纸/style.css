@@ -118,7 +118,7 @@ body {
   flex-wrap: wrap;
   gap: 32px;
   justify-content: center;
-  padding: 16px 16px 60px;
+  padding: 16px 12px 60px;
 }
 
 .page-block {
@@ -186,7 +186,10 @@ body {
     margin: 0;
   }
 
+  html,
   body {
+    margin: 0 !important;
+    padding: 0 !important;
     background: #fff;
   }
 
@@ -197,33 +200,40 @@ body {
 
   #preview {
     display: block;
+    margin: 0;
     padding: 0;
     gap: 0;
   }
 
+  .page-block {
+    margin: 0;
+    padding: 0;
+  }
+
   /* 打印时取消缩放，使用真实 A4 尺寸 */
   .scaler {
-    width: auto;
-    height: auto;
+    width: auto !important;
+    height: auto !important;
     overflow: visible;
   }
 
   .page {
     transform: none !important;
     box-shadow: none !important;
-    margin: 0;
+    margin: 0 !important;
   }
 
-  /* 根据打印目标隐藏另一页 */
-  body.print-scatter #gridWrap {
+  /* 默认只打印数字纸（一张 A4），不产生多余的空白页；
+     点「打印 6×6 方格纸」时改为只打印方格纸 */
+  #gridWrap {
     display: none !important;
+  }
+
+  body.print-grid #gridWrap {
+    display: flex !important;
   }
 
   body.print-grid #scatterWrap {
     display: none !important;
-  }
-
-  .page-block {
-    page-break-after: always;
   }
 }

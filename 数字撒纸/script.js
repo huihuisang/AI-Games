@@ -141,6 +141,17 @@ function buildGrid() {
   }
 }
 
+// ===== 预览缩放：自适应屏幕宽度（尤其手机） =====
+function fitScale() {
+  const A4_PX = 793.7; // 210mm @96dpi
+  const avail = window.innerWidth - 28; // 预留左右内边距
+  // 桌面最大 0.62；手机按可用宽度缩放，最小 0.28
+  const scale = Math.max(0.28, Math.min(0.62, avail / A4_PX));
+  document.documentElement.style.setProperty("--scale", scale.toFixed(3));
+}
+
+window.addEventListener("resize", fitScale);
+
 // ===== 打印 =====
 function printPage(which) {
   const body = document.body;
@@ -159,5 +170,6 @@ $("printScatterBtn").addEventListener("click", () => printPage("scatter"));
 $("printGridBtn").addEventListener("click", () => printPage("grid"));
 
 // 初始化
+fitScale();
 buildGrid();
 generateScatter();
