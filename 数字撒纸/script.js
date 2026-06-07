@@ -14,6 +14,17 @@ const COLORS = [
   "#0891b2", // 青
 ];
 
+// A4 基准像素（96dpi）与超采样倍率（让打印更清晰）
+const A4_W = 794;
+const A4_H = 1123;
+const SS = 2;
+const FONT_FAMILY = '"PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif';
+
+// 两张纸渲染成的图片（data URL）。打印时直接用，保证点击即同步打印（兼容 iOS）。
+let scatterURL = "";
+let gridURL = "";
+const preloader = new Image(); // 预解码，使切换打印图近乎瞬时
+
 // 两个矩形是否相交
 function intersects(a, b) {
   return !(
@@ -24,7 +35,18 @@ function intersects(a, b) {
   );
 }
 
-// ===== 生成散布的数字 =====
+// 取得一个画布的 2D 上下文，并按 A4 基准 + 超采样初始化
+function setupCanvas(canvas) {
+  canvas.width = A4_W * SS;
+  canvas.height = A4_H * SS;
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(SS, 0, 0, SS, 0, 0); // 之后用基准坐标绘制
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, A4_W, A4_H);
+  return ctx;
+}
+
+// ===== 生成「数字纸」到 canvas =====
 function generateScatter() {
   const min = parseInt($("minVal").value, 10);
   const max = parseInt($("maxVal").value, 10);
@@ -51,7 +73,7 @@ function generateScatter() {
   // 范围内不重复数字的总数
   const rangeSize = hi - lo + 1;
 
-  // 准备「不重复」的取值器：范围不大时打乱整池顺序取，范围很大时随机+去重
+  // 「不重复」取值器：范围不大时打乱整池顺序取，范围很大时随机+去重
   const useShuffledPool = rangeSize <= 200000;
   let pool = null;
   let poolIdx = 0;
@@ -81,21 +103,20 @@ function generateScatter() {
     return v;
   };
 
-  const page = $("scatterPage");
-  page.innerHTML = "";
+  const ctx = setupCanvas($("scatterCanvas"));
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
 
-  // 真实 A4 像素尺寸（transform 缩放不影响 clientWidth/Height）
-  const W = page.clientWidth;
-  const H = page.clientHeight;
-  const pad = 28; // 页边距（px）
+  const W = A4_W;
+  const H = A4_H;
+  const pad = 28; // 页边距
 
-  // 最多能放的数量：受「数量设置」和「范围内不重复数字总数」共同限制
   const maxCount = target === Infinity ? rangeSize : Math.min(target, rangeSize);
 
   const placed = [];
   let count = 0;
-  let exhausted = false; // 范围内不重复数字是否已用完
-  let pageFull = false; // 页面是否已铺满放不下
+  let exhausted = false;
+  let pageFull = false;
 
   while (count < maxCount) {
     const value = nextUnique();
@@ -103,14 +124,13 @@ function generateScatter() {
       exhausted = true;
       break;
     }
-
-    const digits = String(value).length;
+    const s = String(value);
     let placedThis = false;
 
-    // 给当前数字尝试多次随机大小/角度/位置，放得下才落子
     for (let attempt = 0; attempt < 200; attempt++) {
       const fs = rndInt(fMin, fMax);
-      const w = fs * 0.62 * digits; // 文字未旋转时的包围盒
+      ctx.font = `700 ${fs}px ${FONT_FAMILY}`;
+      const w = ctx.measureText(s).width; // 精确文字宽度
       const h = fs;
 
       const angle = rnd(-58, 58);
@@ -127,7 +147,6 @@ function generateScatter() {
       const x = rnd(pad, W - pad - bw);
       const y = rnd(pad, H - pad - bh);
 
-      // 加上间距后的占位矩形
       const rect = { x: x - gap / 2, y: y - gap / 2, w: bw + gap, h: bh + gap };
 
       let hit = false;
@@ -141,23 +160,22 @@ function generateScatter() {
 
       placed.push(rect);
 
-      const el = document.createElement("span");
-      el.className = "num";
-      el.textContent = value;
-      el.style.left = x + bw / 2 + "px";
-      el.style.top = y + bh / 2 + "px";
-      el.style.fontSize = fs + "px";
-      el.style.transform = `translate(-50%, -50%) rotate(${angle.toFixed(1)}deg)`;
-      if (colorful) {
-        el.style.color = COLORS[rndInt(0, COLORS.length - 1)];
-      }
-      page.appendChild(el);
+      // 在包围盒中心绘制旋转后的数字
+      ctx.save();
+      ctx.translate(x + bw / 2, y + bh / 2);
+      ctx.rotate((angle * Math.PI) / 180);
+      ctx.fillStyle = colorful
+        ? COLORS[rndInt(0, COLORS.length - 1)]
+        : "#111827";
+      ctx.font = `700 ${fs}px ${FONT_FAMILY}`;
+      ctx.fillText(s, 0, 0);
+      ctx.restore();
+
       placedThis = true;
       count++;
       break;
     }
 
-    // 试了 200 次都放不下，说明页面已经铺满
     if (!placedThis) {
       pageFull = true;
       break;
@@ -171,9 +189,13 @@ function generateScatter() {
     msg += `，纸面已铺满`;
   }
   status.textContent = msg;
+
+  // 同步生成图片并设为默认打印图（数字纸）
+  scatterURL = $("scatterCanvas").toDataURL("image/png");
+  $("printImg").src = scatterURL;
 }
 
-// ===== 构建自定义行列方格 =====
+// ===== 生成「方格纸」到 canvas（行列可自定义）=====
 function buildGrid() {
   let rows = parseInt($("gridRows").value, 10);
   let cols = parseInt($("gridCols").value, 10);
@@ -182,67 +204,51 @@ function buildGrid() {
   rows = Math.min(rows, 50);
   cols = Math.min(cols, 50);
 
-  const grid = $("gridPage");
-  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-  grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
-  grid.innerHTML = "";
-  for (let i = 0; i < rows * cols; i++) {
-    const cell = document.createElement("div");
-    cell.className = "cell";
-    grid.appendChild(cell);
-  }
+  const ctx = setupCanvas($("gridCanvas"));
 
-  // 同步标签文案
+  const pad = 45; // ≈12mm 页边距
+  const gw = A4_W - 2 * pad;
+  const gh = A4_H - 2 * pad;
+  const cw = gw / cols;
+  const ch = gh / rows;
+
+  ctx.strokeStyle = "#111827";
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  for (let c = 0; c <= cols; c++) {
+    const x = pad + c * cw;
+    ctx.moveTo(x, pad);
+    ctx.lineTo(x, pad + gh);
+  }
+  for (let r = 0; r <= rows; r++) {
+    const y = pad + r * ch;
+    ctx.moveTo(pad, y);
+    ctx.lineTo(pad + gw, y);
+  }
+  ctx.stroke();
+
   $("gridLabel").textContent = `${rows} × ${cols} 方格纸（A4）`;
+
+  // 生成方格纸图片并预解码，确保点击「打印方格纸」时能瞬时切换
+  gridURL = $("gridCanvas").toDataURL("image/png");
+  preloader.src = gridURL;
 }
 
-// ===== 预览缩放：自适应屏幕宽度（尤其手机） =====
+// ===== 预览缩放：自适应屏幕宽度（尤其手机）=====
 function fitScale() {
-  const A4_PX = 793.7; // 210mm @96dpi
   const avail = window.innerWidth - 28; // 预留左右内边距
-  // 桌面最大 0.62；手机按可用宽度缩放，最小 0.28
-  const scale = Math.max(0.28, Math.min(0.62, avail / A4_PX));
+  const scale = Math.max(0.28, Math.min(0.62, avail / A4_W));
   document.documentElement.style.setProperty("--scale", scale.toFixed(3));
 }
 
 window.addEventListener("resize", fitScale);
 
 // ===== 打印 =====
-// 直接打印主窗口（主窗口一定能渲染出内容），用内联 display 控制打印哪一页。
-// 不再用 iframe（iOS 上隐藏 iframe 打印会变空白），也不用定时器恢复
-//（iOS 打印预览跟随 DOM 实时重绘，过早恢复会变回默认）。
-// 刷新问题已由按钮 type="button" + preventDefault 根治。
+// @media print 只显示 #printArea 里的这张图片（静态规则），不依赖任何动态
+// 显示切换；这里只需把图片 src 换成所选的那张（图片已预先生成好），
+// 然后在用户点击的同一手势里同步调用 print()，兼容 iOS、不会串页。
 function printPage(which) {
-  const scatter = $("scatterWrap");
-  const grid = $("gridWrap");
-
-  if (which === "grid") {
-    scatter.style.display = "none";
-    grid.style.display = "flex";
-  } else {
-    scatter.style.display = "flex";
-    grid.style.display = "none";
-  }
-
-  // 仅在用户从打印面板「回到页面后」才恢复显示，
-  // 这样打印面板开着的整个过程，所选的那张纸都稳定显示。
-  let restored = false;
-  const onVisible = () => {
-    if (document.visibilityState === "visible") restore();
-  };
-  function restore() {
-    if (restored) return;
-    restored = true;
-    scatter.style.display = "";
-    grid.style.display = "";
-    window.removeEventListener("afterprint", restore);
-    window.removeEventListener("focus", restore);
-    document.removeEventListener("visibilitychange", onVisible);
-  }
-  window.addEventListener("afterprint", restore);
-  window.addEventListener("focus", restore);
-  document.addEventListener("visibilitychange", onVisible);
-
+  $("printImg").src = which === "grid" ? gridURL : scatterURL;
   window.print();
 }
 
@@ -262,7 +268,7 @@ $("printGridBtn").addEventListener("click", (e) => {
 $("gridRows").addEventListener("input", buildGrid);
 $("gridCols").addEventListener("input", buildGrid);
 
-// 初始化
+// ===== 初始化 =====
 fitScale();
 buildGrid();
 generateScatter();

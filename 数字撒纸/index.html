@@ -63,7 +63,7 @@
       <div class="page-block" id="scatterWrap">
         <div class="page-label">数字纸（A4）</div>
         <div class="scaler">
-          <div class="page" id="scatterPage"></div>
+          <canvas class="page" id="scatterCanvas"></canvas>
         </div>
         <button type="button" id="printScatterBtn" class="btn page-print-btn">
           🖨️ 打印数字纸
@@ -74,13 +74,16 @@
       <div class="page-block" id="gridWrap">
         <div class="page-label" id="gridLabel">8 × 10 方格纸（A4）</div>
         <div class="scaler">
-          <div class="page grid-page" id="gridPage"></div>
+          <canvas class="page" id="gridCanvas"></canvas>
         </div>
         <button type="button" id="printGridBtn" class="btn page-print-btn">
           🖨️ 打印方格纸
         </button>
       </div>
     </div>
+
+    <!-- 打印用：把所选页面渲染成的图片放这里，@media print 时只显示它 -->
+    <div id="printArea"><img id="printImg" alt="" /></div>
 
     <script src="script.js"></script>
   </body>
