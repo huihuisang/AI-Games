@@ -6,7 +6,10 @@ const nightLayer = document.createElement("canvas");
 const nightCtx = nightLayer.getContext("2d");
 const TAU = Math.PI * 2;
 const WORLD = 2600;
-const CYCLE_SECONDS = 150;
+const DAY_SECONDS = 180;
+const NIGHT_SECONDS = 180;
+const CYCLE_SECONDS = DAY_SECONDS + NIGHT_SECONDS;
+const TWILIGHT_SECONDS = 12;
 const keys = new Set();
 const ui = Object.fromEntries([...document.querySelectorAll("[id]")].map((el) => [el.id, el]));
 const directions = ["front", "back", "left", "right"];
@@ -30,7 +33,7 @@ const resourceInfo = {
 const recipes = [
   { id: "axe", name: "石斧", cost: { wood: 3, stone: 2, fiber: 1 }, note: "更快地砍伐树木。" },
   { id: "spear", name: "木矛", cost: { wood: 4, stone: 2, fiber: 2 }, note: "扩大攻击范围，提高伤害。" },
-  { id: "fire", name: "篝火", cost: { wood: 6, stone: 4 }, note: "在脚下建立温暖的安全区。" },
+  { id: "fire", name: "篝火", cost: { wood: 6, stone: 4 }, note: "建立温暖的安全区，可持续燃烧两天。" },
   { id: "shelter", name: "庇护所", cost: { wood: 10, fiber: 6, stone: 3 }, note: "在附近恢复生命和体温。" }
 ];
 
@@ -59,7 +62,7 @@ function createState() {
   add("tree", 150); add("rock", 82); add("bush", 56); add("pond", 18, 180); add("fiber", 72);
   add("crate", 12, 220);
   return {
-    running: false, won: false, time: CYCLE_SECONDS / 3, survivalTime: 0, day: 1, score: 0, nextMonster: 0, wasNight: false,
+    running: false, won: false, survivalTime: 0, day: 1, score: 0, nextMonster: 0, wasNight: false,
     player: { x: WORLD / 2, y: WORLD / 2, r: 14, speed: 190, health: 100, hunger: 100, thirst: 100, warmth: 100, facing: 0, direction: "right", moving: false, walkPhase: 0, walkBlend: 0, stepMark: 0, attack: 0, hurt: 0 },
     inventory: { wood: 0, stone: 0, fiber: 0, berry: 2, water: 1, scrap: 0 },
     gear: { axe: false, spear: false }, objects, structures: [], monsters: [], particles: [], popups: [], shake: 0,
@@ -84,17 +87,15 @@ function resize() {
 }
 
 function isNight() {
-  const hour = (state.time / CYCLE_SECONDS * 24) % 24;
-  return hour >= 19 || hour < 6;
+  return state.survivalTime % CYCLE_SECONDS >= DAY_SECONDS;
 }
 
-function hourNow() { return (state.time / CYCLE_SECONDS * 24) % 24; }
-
 function daylight() {
-  const h = hourNow();
-  if (h >= 7 && h <= 17) return 1;
-  if (h > 17 && h < 20) return 1 - (h - 17) / 3;
-  if (h > 4 && h < 7) return (h - 4) / 3;
+  const phase = state.survivalTime % CYCLE_SECONDS;
+  if (phase < DAY_SECONDS - TWILIGHT_SECONDS) return 1;
+  if (phase < DAY_SECONDS) return (DAY_SECONDS - phase) / TWILIGHT_SECONDS;
+  if (phase < CYCLE_SECONDS - TWILIGHT_SECONDS) return 0;
+  if (phase < CYCLE_SECONDS) return (phase - (CYCLE_SECONDS - TWILIGHT_SECONDS)) / TWILIGHT_SECONDS;
   return 0;
 }
 
@@ -123,7 +124,6 @@ function collides(x, y, radius) {
 
 function update(dt) {
   if (!state.running) return;
-  state.time += dt;
   state.survivalTime += dt;
   if (state.survivalTime >= CYCLE_SECONDS * 20) { endGame(true); return; }
   const currentDay = Math.floor(state.survivalTime / CYCLE_SECONDS) + 1;
@@ -133,6 +133,21 @@ function update(dt) {
     state.wasNight = nightNow;
     showToast(nightNow ? "夜幕降临，怪物开始出没" : "天亮了，怪物正在退去");
   }
+
+  let burnedOut = 0;
+  state.structures = state.structures.filter((structure) => {
+    if (structure.type !== "fire" || state.survivalTime < structure.expiresAt) return true;
+    burnedOut++;
+    burst(structure.x, structure.y, "#665a49", 12);
+    return false;
+  });
+  if (burnedOut > 0) showToast(burnedOut > 1 ? `${burnedOut} 堆篝火燃尽了` : "篝火燃尽了");
+  state.structures.forEach((structure) => {
+    if (structure.type === "fire" && !structure.warned && structure.expiresAt - state.survivalTime <= CYCLE_SECONDS / 4) {
+      structure.warned = true;
+      showToast("篝火快要燃尽了");
+    }
+  });
 
   const p = state.player;
   const previousX = p.x;
@@ -267,7 +282,14 @@ function craft(id) {
   if (!recipe || !canAfford(recipe.cost)) return;
   spend(recipe.cost);
   if (id === "axe" || id === "spear") state.gear[id] = true;
-  else state.structures.push({ type: id, x: state.player.x, y: state.player.y, phase: Math.random() * TAU });
+  else state.structures.push({
+    type: id,
+    x: state.player.x,
+    y: state.player.y,
+    phase: Math.random() * TAU,
+    expiresAt: id === "fire" ? state.survivalTime + CYCLE_SECONDS * 2 : Infinity,
+    warned: false
+  });
   showToast(`已制作：${recipe.name}`); renderRecipes(); updateUI();
 }
 
@@ -291,8 +313,7 @@ function updateUI() {
   for (const name of ["health", "hunger", "thirst", "warmth"]) {
     const value = Math.max(0, Math.round(p[name])); ui[`${name}Bar`].style.width = `${value}%`; ui[`${name}Value`].textContent = value;
   }
-  const h = Math.floor(hourNow()); const min = Math.floor((hourNow() % 1) * 60);
-  ui.clock.textContent = `第 ${state.day} 天 · ${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+  ui.clock.textContent = `第 ${state.day} 天 · ${isNight() ? "夜晚" : "白天"}`;
   ui.objective.textContent = state.objective;
   const night = isNight();
   const periodSource = night ? "assets/night-camp.png" : "assets/day-camp.png";
@@ -407,7 +428,34 @@ function drawTower(o) {
 }
 
 function drawStructure(s) {
-  if(s.type==="fire"){shadow(s.x,s.y+10,22,7);ctx.strokeStyle="#7a5b3b";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(s.x-14,s.y+8);ctx.lineTo(s.x+14,s.y-4);ctx.moveTo(s.x-14,s.y-4);ctx.lineTo(s.x+14,s.y+8);ctx.stroke();const flicker=Math.sin(performance.now()*.012+s.phase)*3;ctx.fillStyle="#e65c3f";polygon([[s.x-11,s.y+2],[s.x,s.y-24-flicker],[s.x+11,s.y+2]]);ctx.fillStyle="#ffd273";polygon([[s.x-6,s.y+2],[s.x+2,s.y-14+flicker],[s.x+6,s.y+2]]);}else{shadow(s.x,s.y+20,34,10);ctx.fillStyle="#786345";polygon([[s.x-34,s.y+19],[s.x,s.y-28],[s.x+34,s.y+19]]);ctx.fillStyle="#9b8357";polygon([[s.x-34,s.y+19],[s.x,s.y-28],[s.x-3,s.y+19]]);ctx.fillStyle="#171d16";ctx.fillRect(s.x-7,s.y+2,14,17);}
+  if (s.type === "fire") {
+    const fuel = Math.max(0, Math.min(1, (s.expiresAt - state.survivalTime) / (CYCLE_SECONDS * 2)));
+    const intensity = .65 + fuel * .35;
+    shadow(s.x, s.y + 10, 22, 7);
+    ctx.strokeStyle = "#7a5b3b";
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.moveTo(s.x - 14, s.y + 8); ctx.lineTo(s.x + 14, s.y - 4);
+    ctx.moveTo(s.x - 14, s.y - 4); ctx.lineTo(s.x + 14, s.y + 8);
+    ctx.stroke();
+    const flicker = Math.sin(performance.now() * .012 + s.phase) * 3;
+    ctx.fillStyle = "#e65c3f";
+    polygon([[s.x - 11, s.y + 2], [s.x, s.y - (24 + flicker) * intensity], [s.x + 11, s.y + 2]]);
+    ctx.fillStyle = "#ffd273";
+    polygon([[s.x - 6, s.y + 2], [s.x + 2, s.y - (14 - flicker) * intensity], [s.x + 6, s.y + 2]]);
+    ctx.fillStyle = "#151d16cc";
+    ctx.fillRect(s.x - 18, s.y + 20, 36, 4);
+    ctx.fillStyle = fuel > .2 ? "#e8c66a" : "#df6855";
+    ctx.fillRect(s.x - 18, s.y + 20, 36 * fuel, 4);
+  } else {
+    shadow(s.x, s.y + 20, 34, 10);
+    ctx.fillStyle = "#786345";
+    polygon([[s.x - 34, s.y + 19], [s.x, s.y - 28], [s.x + 34, s.y + 19]]);
+    ctx.fillStyle = "#9b8357";
+    polygon([[s.x - 34, s.y + 19], [s.x, s.y - 28], [s.x - 3, s.y + 19]]);
+    ctx.fillStyle = "#171d16";
+    ctx.fillRect(s.x - 7, s.y + 2, 14, 17);
+  }
 }
 
 function drawMonster(m) {
