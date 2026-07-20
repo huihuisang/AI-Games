@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#101913" />
+    <link rel="icon" href="data:," />
+    <title>荒野余生</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <canvas id="game" aria-label="荒野余生游戏世界"></canvas>
+
+      <section class="hud" aria-label="生存状态">
+        <div class="brand"><span>荒野余生</span><small id="clock">第 1 天 · 08:00</small></div>
+        <div class="meters">
+          <div class="meter"><span>生命</span><i><b id="healthBar"></b></i><em id="healthValue">100</em></div>
+          <div class="meter"><span>饥饿</span><i><b id="hungerBar"></b></i><em id="hungerValue">100</em></div>
+          <div class="meter"><span>口渴</span><i><b id="thirstBar"></b></i><em id="thirstValue">100</em></div>
+          <div class="meter"><span>体温</span><i><b id="warmthBar"></b></i><em id="warmthValue">100</em></div>
+        </div>
+        <div class="objective"><span>目标</span><strong id="objective">坚持生存 20 天，等待救援</strong></div>
+      </section>
+
+      <section id="dayCounter" class="day-counter day" aria-label="天数计时器">
+        <img id="periodImage" src="assets/day-camp.png" alt="白天的荒野营地" />
+        <div><span id="periodLabel">☀ 白天</span><strong id="dayCount">第 1 / 20 天</strong><i><b id="rescueProgress"></b></i><small>救援正在接近</small></div>
+      </section>
+
+      <aside class="inventory" aria-label="背包">
+        <h2>背包</h2>
+        <div id="resources" class="resources"></div>
+        <button id="craftButton" class="panel-button">制作 <kbd>C</kbd></button>
+      </aside>
+
+      <div id="prompt" class="prompt hidden"></div>
+      <div id="toast" class="toast hidden"></div>
+
+      <section id="craftPanel" class="modal hidden" aria-label="制作菜单">
+        <div class="modal-card craft-card">
+          <header><div><small>野外手册</small><h1>物品制作</h1></div><button data-close aria-label="关闭">×</button></header>
+          <div id="recipes" class="recipes"></div>
+          <p class="key-hint">按 <kbd>C</kbd> 或 <kbd>Esc</kbd> 关闭</p>
+        </div>
+      </section>
+
+      <section id="startScreen" class="modal">
+        <div class="modal-card start-card">
+          <small>迷失在无边林海</small>
+          <h1>荒野余生</h1>
+          <p>采集物资，制作工具，熬过怪物出没的黑夜。坚持生存 20 天，救援就会抵达。</p>
+          <div class="controls"><span><kbd>WASD</kbd> 移动</span><span><kbd>E</kbd> 互动</span><span><kbd>空格</kbd> 攻击</span><span><kbd>C</kbd> 制作</span></div>
+          <button id="startButton" class="primary-button">进入荒野</button>
+        </div>
+      </section>
+
+      <section id="endScreen" class="modal hidden">
+        <div class="modal-card start-card">
+          <small id="endEyebrow">荒野又留下了一位旅人</small>
+          <h1 id="endTitle">生存失败</h1>
+          <p id="endText"></p>
+          <button id="restartButton" class="primary-button">再次挑战</button>
+        </div>
+      </section>
+
+      <div id="joystick" class="joystick" aria-label="移动摇杆"><i></i></div>
+      <div class="mobile-actions"><button id="interactButton">E<small>互动</small></button><button id="attackButton">⚔<small>攻击</small></button></div>
+    </main>
+    <script src="game.js"></script>
+  </body>
+</html>
