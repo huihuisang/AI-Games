@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#dff4ff" />
+    <title>摇骰子 · 派对游戏工具</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="sky-decoration sky-decoration--left" aria-hidden="true"></div>
+    <div class="sky-decoration sky-decoration--right" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="../index.html" aria-label="派对游戏工具首页">
+        <span class="brand-mark" aria-hidden="true">🎲</span>
+        <span>派对游戏工具</span>
+      </a>
+      <a class="back-link" href="../index.html"><span aria-hidden="true">←</span> 返回游戏集</a>
+    </header>
+
+    <main class="page-content">
+      <section class="intro" aria-labelledby="page-title">
+        <h1 id="page-title">摇一摇，看看今天的好运气！</h1>
+        <p>选好骰子，点击按钮开始冒险！</p>
+      </section>
+
+      <section class="dice-stage" aria-label="3D 骰子摇骰区域">
+        <div class="stage-cloud stage-cloud--one" aria-hidden="true"></div>
+        <div class="stage-cloud stage-cloud--two" aria-hidden="true"></div>
+        <div class="stage-stars" aria-hidden="true"><span>✦</span><span>✧</span><span>✦</span><span>✧</span></div>
+        <div class="stage-platform" aria-hidden="true"></div>
+        <div class="dice-render" id="dice-render">
+          <div class="dice-loading" id="dice-loading" aria-live="polite">
+            <span aria-hidden="true">🎲</span>
+            <span>骰子准备中…</span>
+          </div>
+        </div>
+        <p class="stage-caption" id="stage-caption" aria-live="polite">点一下，让好运滚出来！</p>
+      </section>
+
+      <section class="controls" aria-label="骰子设置">
+        <div class="die-types" role="group" aria-label="选择骰子类型">
+          <button class="die-type" type="button" data-sides="4" aria-pressed="false">D4</button>
+          <button class="die-type is-selected" type="button" data-sides="6" aria-pressed="true">D6</button>
+          <button class="die-type" type="button" data-sides="8" aria-pressed="false">D8</button>
+          <button class="die-type" type="button" data-sides="10" aria-pressed="false">D10</button>
+          <button class="die-type" type="button" data-sides="12" aria-pressed="false">D12</button>
+          <button class="die-type" type="button" data-sides="20" aria-pressed="false">D20</button>
+        </div>
+
+        <div class="roll-controls">
+          <div class="quantity-control">
+            <span class="quantity-label" id="quantity-label">骰子数量</span>
+            <div class="stepper" role="group" aria-labelledby="quantity-label">
+              <button class="stepper-button" id="decrease-count" type="button" aria-label="减少骰子数量">−</button>
+              <output class="quantity-value" id="dice-count" aria-live="polite">2</output>
+              <button class="stepper-button" id="increase-count" type="button" aria-label="增加骰子数量">+</button>
+            </div>
+          </div>
+          <button class="roll-button" id="roll-button" type="button">
+            <span class="roll-button-die" aria-hidden="true">🎲</span>
+            <span>摇骰子！</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="results" aria-labelledby="result-heading">
+        <h2 id="result-heading">本次点数</h2>
+        <div class="result-dice" id="result-dice" aria-live="polite"></div>
+        <p class="result-total" id="result-total" aria-live="polite">？</p>
+        <p class="result-message" id="result-message">准备好了就摇一摇吧！</p>
+      </section>
+
+      <section class="history" aria-labelledby="history-heading" hidden>
+        <h2 id="history-heading">最近结果</h2>
+        <ol class="history-list" id="history-list"></ol>
+      </section>
+    </main>
+
+    <script src="script.js" defer></script>
+  </body>
+</html>
