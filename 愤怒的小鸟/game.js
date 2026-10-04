@@ -1370,7 +1370,21 @@ canvas.addEventListener('pointerdown', (e) => {
   Sfx.ensure();
   try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
   if (G.scene !== 'play' || G.paused) return;
-  G.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  // 僵尸指针清理：同 id 重复 down 或超过 1.5s 无动静，说明上一次 up/cancel 已丢失
+  const now = performance.now();
+  for (const [id, p] of [...G.pointers]) {
+    if (id === e.pointerId || now - (p.t || 0) > 1500) G.pointers.delete(id);
+  }
+
+  // 拖拽中来了另一个指针 → 上一把的松手事件丢了（如在窗口外松开），立即按当前拉伸结算
+  if (G.phase === 'drag' && G.drag && !G.drag.pan && G.drag.id !== e.pointerId) {
+    releaseDrag();
+    return;
+  }
+  if (G.phase === 'drag' && G.drag && !G.drag.pan) return; // 同一指针重复 down，忽略
+
+  G.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, t: now });
   if (G.pointers.size > 1) return; // 双指缩放不触发其它逻辑
 
   const w = screenToWorld(e.clientX, e.clientY);
@@ -1399,7 +1413,7 @@ window.addEventListener('pointermove', (e) => {
   const prev = G.pointers.get(e.pointerId);
   if (!prev) return;
   const dx = e.clientX - prev.x, dy = e.clientY - prev.y;
-  G.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  G.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, t: performance.now() });
 
   if (G.pointers.size === 2) { // 双指捏合缩放
     const pts = [...G.pointers.values()];
@@ -1436,6 +1450,10 @@ function pointerUp(e) {
 window.addEventListener('pointerup', pointerUp);
 window.addEventListener('pointercancel', pointerUp);
 window.addEventListener('blur', () => { if (G.phase === 'drag') releaseDrag(); });
+// 拖拽中指针离开窗口（如在面板外才松手）→ 按当前拉伸结算，绝不卡死在拖拽态
+window.addEventListener('mouseout', (e) => {
+  if (!e.relatedTarget && G.phase === 'drag' && G.drag && !G.drag.pan) releaseDrag();
+});
 
 canvas.addEventListener('wheel', (e) => {
   if (G.scene !== 'play') return;
@@ -1583,7 +1601,7 @@ setInterval(() => {
 
 // 调试句柄（不影响游戏；step 可在标签页被节流时手动驱动帧）
 window.__AB2 = {
-  v: 5,
+  v: 6,
   G, cam, loadLevel,
   step(dt = 1 / 60) { G.world.update(dt); update(dt); render(); },
   launch, tryAbility, damage,
