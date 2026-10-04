@@ -145,13 +145,19 @@ const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 let cw = 0, ch = 0, dpr = 1, baseScale = 1;
 function resize() {
-  dpr = Math.min(window.devicePixelRatio || 1, 2);
-  cw = window.innerWidth; ch = window.innerHeight;
-  canvas.width = cw * dpr; canvas.height = ch * dpr;
-  canvas.style.width = cw + 'px'; canvas.style.height = ch + 'px';
+  const w = window.innerWidth, h = window.innerHeight;
+  const d = Math.min(window.devicePixelRatio || 1, 2);
+  // 尺寸没变就不重建画布：重建会清屏，iOS 上反复触发会表现为不停闪烁
+  if (w === cw && h === ch && d === dpr) return;
+  cw = w; ch = h; dpr = d;
+  canvas.width = Math.round(cw * dpr);
+  canvas.height = Math.round(ch * dpr);
+  canvas.style.width = cw + 'px';
+  canvas.style.height = ch + 'px';
   baseScale = ch / 1080;
 }
 window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 60));
 resize();
 
 const cam = {

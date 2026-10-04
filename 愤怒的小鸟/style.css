@@ -4,12 +4,21 @@
 html, body {
   width: 100%; height: 100%;
   overflow: hidden;
+  position: fixed; inset: 0;
+  overscroll-behavior: none;
   font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   background: #5db9ea;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
-#game { position: fixed; inset: 0; display: block; touch-action: none; cursor: crosshair; }
+#game {
+  position: fixed; inset: 0; display: block;
+  touch-action: none; cursor: crosshair;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
 
 .hidden { display: none !important; }
 
@@ -34,7 +43,6 @@ html, body {
   flex: 1; max-width: 330px;
   background: rgba(30, 40, 60, 0.55);
   border-radius: 14px; padding: 7px 14px 9px;
-  backdrop-filter: blur(3px);
 }
 #score { color: #fff; font-weight: 800; font-size: 26px; line-height: 1.05; text-shadow: 0 2px 0 rgba(0,0,0,0.35); }
 #destr-bar {
@@ -67,7 +75,6 @@ html, body {
   background: rgba(60, 38, 16, 0.5);
   border: 2px solid rgba(255, 220, 160, 0.35);
   border-radius: 18px; padding: 10px 14px;
-  backdrop-filter: blur(3px);
 }
 .card {
   width: 76px; border-radius: 14px;
@@ -106,12 +113,26 @@ html, body {
   100% { opacity: 0; transform: translate(-50%,-56%) scale(1); }
 }
 
+/* ---------- 竖屏提示 ---------- */
+#rotate-hint {
+  display: none;
+  position: fixed; top: calc(env(safe-area-inset-top, 0px) + 64px); left: 50%;
+  transform: translateX(-50%);
+  z-index: 20; pointer-events: none;
+  background: rgba(30, 40, 60, 0.65); color: #fff;
+  font-size: 14px; font-weight: 700;
+  border-radius: 999px; padding: 6px 16px;
+}
+@media (orientation: portrait) and (max-width: 920px) {
+  #rotate-hint { display: block; }
+}
+
 /* ---------- 全屏界面 ---------- */
 .screen {
   position: fixed; inset: 0; z-index: 10;
   display: flex; align-items: center; justify-content: center;
 }
-.overlay { background: rgba(15, 30, 50, 0.55); backdrop-filter: blur(3px); }
+.overlay { background: rgba(15, 30, 50, 0.55); }
 
 .menu-box, .panel {
   text-align: center;
