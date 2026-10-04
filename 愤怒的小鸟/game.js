@@ -1431,6 +1431,8 @@ window.addEventListener('pointermove', (e) => {
     applyDragToBird();
     const s = stretchVec();
     if (hyp(s.x, s.y) > 8) Sfx.play('stretch', Math.min(s.len / MAX_STRETCH, 1));
+    // 帧循环被挂起时（内嵌面板失焦）事件驱动重绘，保证拖拽跟手
+    if (performance.now() - lastRafAt > 350) render();
   } else if (G.drag && G.drag.pan && e.pointerId === G.drag.id) {
     cam.x -= dx / cam.scale;
     cam.y -= dy / cam.scale;
@@ -1445,6 +1447,8 @@ function pointerUp(e) {
   if (G.pointers.size < 2) G._pinchD = null;
   if (wasDrag) releaseDrag();
   else if (G.drag && G.drag.pan && G.drag.id === e.pointerId) G.drag = null;
+  // 帧循环被挂起时立即重绘，让发射/弹回瞬间可见
+  if (performance.now() - lastRafAt > 350) render();
 }
 // 绑在 window 上：指针捕获失效或移出画布松手也能收到
 window.addEventListener('pointerup', pointerUp);
@@ -1588,9 +1592,12 @@ requestAnimationFrame(frame);
 // 兜底循环：部分内嵌浏览器会把 rAF 完全挂起（页面 visible 也不给帧），
 // 此时用定时器追帧驱动游戏保证可玩；rAF 正常时本循环自动空转
 let lastRafAt = performance.now(), lastFallbackAt = 0;
+const fpsWarn = document.getElementById('fps-warn');
 setInterval(() => {
   const now = performance.now();
-  if (now - lastRafAt < 350) return;
+  const starved = now - lastRafAt >= 350;
+  if (fpsWarn) fpsWarn.classList.toggle('show', starved && G.scene === 'play');
+  if (!starved) return;
   let elapsed = Math.min(now - (lastFallbackAt || now), 2000);
   lastFallbackAt = now;
   while (elapsed > 0) {
@@ -1601,7 +1608,7 @@ setInterval(() => {
 
 // 调试句柄（不影响游戏；step 可在标签页被节流时手动驱动帧）
 window.__AB2 = {
-  v: 6,
+  v: 7,
   G, cam, loadLevel,
   step(dt = 1 / 60) { G.world.update(dt); update(dt); render(); },
   launch, tryAbility, damage,

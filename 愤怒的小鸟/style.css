@@ -113,6 +113,19 @@ html, body {
   100% { opacity: 0; transform: translate(-50%,-56%) scale(1); }
 }
 
+/* ---------- 帧率受限提示 ---------- */
+#fps-warn {
+  display: none;
+  position: fixed; left: 50%; bottom: 110px;
+  transform: translateX(-50%);
+  z-index: 20; pointer-events: none;
+  background: rgba(90, 40, 10, 0.72); color: #ffe9c9;
+  font-size: 13px; font-weight: 700;
+  border-radius: 999px; padding: 6px 16px;
+  white-space: nowrap;
+}
+#fps-warn.show { display: block; }
+
 /* ---------- 竖屏提示 ---------- */
 #rotate-hint {
   display: none;
