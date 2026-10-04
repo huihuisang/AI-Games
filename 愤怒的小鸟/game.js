@@ -1607,10 +1607,12 @@ setInterval(() => {
 }, 250);
 
 // 调试句柄（不影响游戏；step 可在标签页被节流时手动驱动帧）
+const VER = 'v7';
+const verTag = document.getElementById('ver-tag');
+if (verTag) verTag.textContent = VER;
 window.__AB2 = {
   v: 7,
-  G, cam, loadLevel,
-  step(dt = 1 / 60) { G.world.update(dt); update(dt); render(); },
+  G, cam, loadLevel,  step(dt = 1 / 60) { G.world.update(dt); update(dt); render(); },
   launch, tryAbility, damage,
   state() {
     return {

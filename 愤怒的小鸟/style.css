@@ -58,7 +58,13 @@ html, body {
 #destr-bar .mark { position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.7); }
 #destr-bar .m2 { left: 55%; } #destr-bar .m3 { left: 80%; }
 
-#hud-right { display: flex; gap: 8px; }
+#hud-right { display: flex; gap: 8px; align-items: center; }
+#ver-tag {
+  color: rgba(255,255,255,0.75);
+  background: rgba(30,40,60,0.45);
+  border-radius: 10px; padding: 4px 9px;
+  font-size: 12px; font-weight: 700;
+}
 
 #pigs-left {
   position: absolute; top: 70px; right: 16px;
