@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>愤怒的小鸟2 · 仿制版</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- 游戏内 HUD -->
+  <div id="hud" style="display:none">
+    <div id="hud-top">
+      <button class="icon-btn" id="btn-pause" title="暂停">⏸</button>
+      <div id="score-box">
+        <div id="score">0</div>
+        <div id="destr-bar"><div id="destr-fill"></div><i class="mark m2"></i><i class="mark m3"></i></div>
+      </div>
+      <div id="hud-right">
+        <button class="icon-btn" id="btn-restart" title="重新开始">↻</button>
+        <button class="icon-btn" id="btn-mute" title="音效">🔊</button>
+      </div>
+    </div>
+    <div id="pigs-left">🐷 × 0</div>
+    <div id="cards"></div>
+  </div>
+
+  <div id="banner"></div>
+
+  <!-- 主菜单 -->
+  <div id="screen-menu" class="screen hidden">
+    <div class="menu-box">
+      <h1 class="game-title">愤怒的小鸟 2</h1>
+      <p class="subtitle">仿制版 · 弹弓物理破坏大战</p>
+      <button class="big-btn" id="btn-play">▶ 开始游戏</button>
+      <p class="hint">绿猪们偷走了鸟蛋！拉开弹弓，砸垮它们的堡垒。<br />
+      出鸟前可以点击下方卡牌选择用哪只鸟；鸟在空中时点击屏幕触发技能。</p>
+    </div>
+  </div>
+
+  <!-- 选关 -->
+  <div id="screen-levels" class="screen hidden">
+    <div class="panel">
+      <h2>选择关卡</h2>
+      <div id="level-grid"></div>
+      <button class="big-btn gray" id="btn-back-menu">返回主菜单</button>
+    </div>
+  </div>
+
+  <!-- 胜利 -->
+  <div id="overlay-win" class="screen overlay hidden">
+    <div class="panel">
+      <h2 class="win-title">关卡完成！</h2>
+      <div id="win-stars"></div>
+      <div class="result">
+        <div>得分 <b id="win-score">0</b></div>
+        <div id="win-pct">摧毁率 0%</div>
+      </div>
+      <div class="btn-row">
+        <button class="big-btn" id="btn-next">下一关 ▶</button>
+        <button class="big-btn gray" id="btn-win-retry">↻ 重玩</button>
+        <button class="big-btn gray" id="btn-win-levels">选关</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 失败 -->
+  <div id="overlay-lose" class="screen overlay hidden">
+    <div class="panel">
+      <h2 class="lose-title">差一点！</h2>
+      <p id="lose-text"></p>
+      <div class="btn-row">
+        <button class="big-btn" id="btn-retry">↻ 再试一次</button>
+        <button class="big-btn gray" id="btn-lose-levels">选关</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 暂停 -->
+  <div id="overlay-pause" class="screen overlay hidden">
+    <div class="panel">
+      <h2>暂停</h2>
+      <p class="hint">R 重开 · P/Esc 暂停 · M 静音<br />拖动空白处移动镜头，滚轮/双指缩放</p>
+      <div class="btn-row">
+        <button class="big-btn" id="btn-resume">▶ 继续</button>
+        <button class="big-btn gray" id="btn-pause-restart">↻ 重新开始</button>
+        <button class="big-btn gray" id="btn-pause-levels">选关</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="physics.js"></script>
+  <script src="levels.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
