@@ -1,4 +1,4 @@
-import { createBallPool, restoreHistory } from './draw.mjs';
+import { createBallPool, randomInt, restoreHistory } from './draw.mjs';
 import { DrawSequence } from './sequence.mjs';
 import { createMachine, stepMachine, FIXED_STEP } from './simulation.mjs';
 import { createPresetPools } from './presets.mjs';
@@ -58,6 +58,7 @@ soundButton.addEventListener('click', async () => {
 
 function resetChambers(plan = null, motionMode = reducedMotion.matches) {
   machine = createMachine(geometry, { sequence, reducedMotion: motionMode,
+    seed: plan?.seed ?? randomInt(0x100000000),
     redNumbers: plan?.redNumbers ?? createBallPool(33), blueNumbers: plan?.blueNumbers ?? createBallPool(16) });
   redChamber = machine.red;
   blueChamber = machine.blue;
@@ -122,6 +123,8 @@ function paint() {
     context.restore();
   }
   canvas.dataset.phase = sequence.phase;
+  canvas.dataset.mixingSeed = machine.seed;
+  canvas.dataset.motorSpeed = Math.max(redChamber.angularVelocity, blueChamber.angularVelocity).toFixed(2);
   canvas.dataset.redCount = redChamber.balls.length;
   canvas.dataset.blueCount = blueChamber.balls.length;
   canvas.dataset.revealed = slots.filter(slot => !slot.classList.contains('is-empty')).length;
@@ -191,6 +194,21 @@ function resize() {
 }
 new ResizeObserver(resize).observe(canvas);
 
+async function preparePreset(preset, motionMode) {
+  const seed = randomInt(0x100000000);
+  let worker;
+  try {
+    worker = new Worker(new URL('./preset-worker.mjs', import.meta.url), { type: 'module' });
+    return await new Promise((resolve, reject) => {
+      worker.onmessage = ({ data }) => data.error ? reject(new Error(data.error)) : resolve(data);
+      worker.onerror = () => reject(new Error('Preset worker could not be loaded'));
+      worker.postMessage({ geometry, preset, reducedMotion: motionMode, seed });
+    });
+  } catch {
+    return createPresetPools(geometry, preset, motionMode, seed);
+  } finally { worker?.terminate(); }
+}
+
 drawButton.addEventListener('click', async () => {
   if (!ready || sequence.active || preparing) return;
   audio.prepare();
@@ -205,7 +223,7 @@ drawButton.addEventListener('click', async () => {
       buttonLabel.textContent = '准备中…';
       status.textContent = '正在准备号码预设…';
       await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
-      plan = createPresetPools(geometry, preset, motionMode);
+      plan = await preparePreset(preset, motionMode);
     }
     resetChambers(plan, motionMode);
     activePresetName = preset?.name ?? null;
@@ -225,7 +243,7 @@ drawButton.addEventListener('click', async () => {
     slot.removeAttribute('aria-label');
   });
   progressLabel.textContent = '0 / 7';
-  status.textContent = preset ? `使用「${preset.name}」，小球转起来啦` : '小球转起来啦，先摇出 6 颗红球';
+  status.textContent = preset ? `使用「${preset.name}」，先充分混球再开闸` : '正在充分混球，稍后逐个出球';
   canvas.setAttribute('aria-label', '摇奖中，小球在透明球舱内滚动碰撞');
   drawButton.disabled = true;
   buttonLabel.textContent = '摇奖中…';

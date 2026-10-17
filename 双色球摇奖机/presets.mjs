@@ -1,4 +1,4 @@
-import { createBallPool } from './draw.mjs';
+import { createBallPool, randomInt } from './draw.mjs';
 import { createMachine, stepMachine, FIXED_STEP } from './simulation.mjs';
 
 const DEFAULT_PRESETS = [
@@ -6,7 +6,6 @@ const DEFAULT_PRESETS = [
   { id: 'blue-example', name: '只指定蓝球', red: [], blue: 9 },
   { id: 'mixed-example', name: '红蓝组合', red: [6, 16], blue: 8 },
 ];
-const captureOrders = new Map();
 
 function normalizePreset(input) {
   if (!input || typeof input.id !== 'string' || !input.id || input.id === 'random' || input.id.length > 80) {
@@ -66,13 +65,11 @@ export function createPresetDraw(input) {
   return { red: order.map(position => red[position - 1]), blue: preset.blue ?? createBallPool(16)[0] };
 }
 
-function forecastCaptureOrder(geometry, reducedMotion) {
-  const key = JSON.stringify([geometry, reducedMotion]);
-  if (captureOrders.has(key)) return captureOrders.get(key);
-  const machine = createMachine(geometry, { reducedMotion });
+function forecastCaptureOrder(geometry, reducedMotion, seed) {
+  const machine = createMachine(geometry, { reducedMotion, seed });
   machine.sequence.start();
   const order = { red: [], blue: [] };
-  // Forecast physical slots once. Secure random labels are assigned before any animation.
+  // Replay this draw's initial state. Labels do not affect any physical calculation.
   for (let tick = 0; tick < 120 * 60 && machine.sequence.active; tick++) {
     const events = stepMachine(machine, FIXED_STEP);
     if (events.capture) order[events.capture.blue ? 'blue' : 'red'].push(events.capture.number);
@@ -80,7 +77,6 @@ function forecastCaptureOrder(geometry, reducedMotion) {
   if (order.red.length !== 6 || order.blue.length !== 1 || machine.sequence.phase !== 'complete') {
     throw new Error('预设准备失败，请重试');
   }
-  captureOrders.set(key, order);
   return order;
 }
 
@@ -92,9 +88,9 @@ function assignLabels(count, slots, labels) {
   return pool.map(number => number ?? remainder[cursor++]);
 }
 
-export function createPresetPools(geometry, preset, reducedMotion) {
+export function createPresetPools(geometry, preset, reducedMotion, seed = randomInt(0x100000000)) {
   const draw = createPresetDraw(preset);
-  const order = forecastCaptureOrder(geometry, reducedMotion);
-  return { draw, redNumbers: assignLabels(33, order.red, draw.red),
+  const order = forecastCaptureOrder(geometry, reducedMotion, seed);
+  return { draw, seed, redNumbers: assignLabels(33, order.red, draw.red),
     blueNumbers: assignLabels(16, order.blue, [draw.blue]) };
 }

@@ -25,7 +25,7 @@ export class DrawSequence {
       this.phase = 'mixing';
       this.elapsed = 0;
     }
-    const duration = this.index === 0 ? 2.8 : this.blue ? 1.7 : 0.7;
+    const duration = this.index === 0 ? 8 : this.blue ? 6 : 1.5;
     if (this.phase === 'mixing' && this.elapsed >= duration) {
       this.phase = 'capturing';
       this.elapsed = 0;

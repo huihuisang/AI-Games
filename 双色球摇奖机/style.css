@@ -48,6 +48,7 @@ h2 { font-size: 16px; font-weight: 750; letter-spacing: .02em; }
 .preset-trigger { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 0 14px; border: 1px solid #ead9b6; border-radius: 14px; background: #fff2d9; color: var(--ink); font-size: 13px; text-align: left; }
 .preset-caption { color: #85745f; font-size: 12px; }
 #current-preset { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#preset-fixed-badge { flex: 0 0 auto; padding: 3px 6px; border-radius: 6px; background: #f5dfbc; color: #8e5f37; font-size: 10px; }
 .preset-chevron { color: #a08463; font-size: 24px; line-height: 1; }
 .preset-trigger:disabled { opacity: .55; cursor: default; }
 .preset-toolbar { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px; margin-top: 20px; }

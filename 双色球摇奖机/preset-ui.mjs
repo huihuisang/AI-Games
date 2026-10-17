@@ -36,6 +36,7 @@ export function createPresetUI({ readStorage, writeStorage }) {
     select.value = state.selectedId;
     const selected = state.presets.find(preset => preset.id === state.selectedId);
     document.querySelector('#current-preset').textContent = selected?.name ?? '完全随机';
+    document.querySelector('#preset-fixed-badge').hidden = !selected;
     document.querySelector('#preset-summary').textContent = selected
       ? `${describe(selected)}，${selected.red.length === 6 && selected.blue !== null ? '全部号码已指定' : '其余随机'}`
       : '6 个红球和 1 个蓝球全部随机';

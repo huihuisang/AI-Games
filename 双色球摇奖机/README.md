@@ -16,8 +16,10 @@ Open `http://127.0.0.1:4173/双色球摇奖机/` in a browser.
 
 - Draw six distinct red numbers from 1 to 33, then one blue number from 1 to 16.
 - In fully random mode, use `crypto.getRandomValues` with rejection sampling to shuffle physical ball labels. Physics does not read labels, so every remaining number has the same chance of reaching the outlet.
-- Show only the current preset in the main view. Tap it to open the preset picker, inspect fixed numbers, or open the manager. Select a saved preset before a draw. Red presets accept 0–6 fixed numbers; blue presets accept one fixed number or remain random. Required numbers appear in the result, and all remaining positions are sampled without replacement.
+- Show the current preset in one row, with a small fixed-number badge when required numbers are active. Tap it to open the preset picker, inspect fixed numbers, or open the manager. Select a saved preset before a draw. Red presets accept 0–6 fixed numbers; blue presets accept one fixed number or remain random. Required numbers appear in the result, and all remaining positions are sampled without replacement.
 - Create, edit, and delete up to 20 named presets. Three editable examples are included. Presets and the last selection are saved on this device. Preset controls are locked during a draw.
+- Seed each draw with a fresh value from `crypto.getRandomValues`. Randomize initial ball slots, chamber rotation, velocity, and spin. The seeded motion generator never selects number labels.
+- Mix at 6 radians per second in normal mode, about 3.6 times the previous speed. Mix red balls for 8 seconds before the first gate, blue balls for 6 seconds, and red balls for 1.5 seconds between releases.
 - Drive the balls by contact with three rotating paddle arms. Gravity, wall collisions, friction, and spin make the balls lift, tumble, and fall.
 - Open the bottom gate for one ball. Start its tube motion at its actual capture position. Reveal its number only after it rolls down the tube, bumps the tray, and settles.
 - Block a second draw until all seven balls arrive.
@@ -36,6 +38,7 @@ Open `http://127.0.0.1:4173/双色球摇奖机/` in a browser.
 - `transit.mjs`: tube arc length, downhill acceleration, rolling angle, and tray impact.
 - `simulation.mjs`: shared physical machine updates at a fixed 120 Hz step.
 - `presets.mjs`: preset validation, persistence format, conditional sampling, and pre-draw label planning.
+- `preset-worker.mjs`: per-draw preset planning outside the main UI thread.
 - `preset-ui.mjs`: preset selection and mobile editor controls.
 - `machine-audio.mjs`: local sample loading, motor loop, contact and outlet sounds, gain control, and bounded transient voices.
 - `app.mjs`: canvas rendering, controls, audio integration, and history.
@@ -46,6 +49,7 @@ Open `http://127.0.0.1:4173/双色球摇奖机/` in a browser.
 ```sh
 node --test 双色球摇奖机/tests/*.test.mjs
 node --check 双色球摇奖机/app.mjs
+node 双色球摇奖机/qa/randomness-check.mjs
 ```
 
 ## Assets
@@ -60,7 +64,7 @@ The play and speaker icons come from Phosphor Icons Core 2.1.1. See `assets/PHOS
 
 ## Preset Draws
 
-Preset mode forecasts the physical capture slots with the same fixed-step solver used for playback. It assigns securely sampled labels to those slots before the animation starts. Every red and blue ball remains in the machine, and no label changes during a draw. The forecast is cached per geometry and motion mode. A draw holds its starting motion mode until completion so that a settings change cannot invalidate the plan. Unselected positions remain random. History stores the preset name as it was at draw time.
+Preset mode forecasts the physical capture slots with the same fixed-step solver used for playback. It assigns securely sampled labels to those slots before the animation starts. Every red and blue ball remains in the machine, and no label changes during a draw. The forecast uses the same per-draw seed and motion mode as playback. It runs in a module worker so a new random physical layout does not freeze the main UI. Browsers without worker support use the same solver on the main thread. A draw holds its starting motion mode until completion so that a settings change cannot invalidate the plan. Unselected positions remain random. The example mixed preset deliberately fixes red 06 and 16 and blue 08; use Fully random to remove all required numbers. History stores the preset name as it was at draw time.
 
 ## Motion Capture
 

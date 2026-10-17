@@ -13,6 +13,7 @@
   <a id="download" hidden>Download recording</a>
   <a id="metrics" hidden>Download measurements</a>
   <p id="status" role="status">Loading machine</p>
+  <pre id="summary"></pre>
   <iframe src="../index.html" title="Mobile machine preview"></iframe>
   <script type="module">
     const frame = document.querySelector('iframe');
@@ -39,6 +40,7 @@
       const measurements = [];
       const started = performance.now();
       let ending = false;
+      let startedDrawing = false;
       recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
       recorder.onstop = () => {
         clearInterval(timer);
@@ -52,15 +54,27 @@
         metrics.download = 'motion-measurements.json';
         metrics.hidden = false;
         status.textContent = `Recording complete: ${((performance.now() - started) / 1000).toFixed(1)} seconds`;
+        window.document.querySelector('#summary').textContent = JSON.stringify({
+          seed: measurements.find(entry => entry.phase !== 'idle' && entry.phase !== 'complete')?.mixingSeed,
+          peakMotorSpeed: Math.max(...measurements.map(entry => Number(entry.motorSpeed))),
+          firstTransitSeconds: measurements.find(entry => entry.phase === 'travel')?.milliseconds / 1000,
+          revealed: canvas.dataset.revealed,
+          phase: canvas.dataset.phase,
+          result: [...document.querySelectorAll('#result-balls li span')].map(node => node.textContent),
+          viewport: [frame.contentWindow.innerWidth, frame.contentWindow.innerHeight],
+          pageSize: [document.documentElement.scrollWidth, document.documentElement.scrollHeight],
+        }, null, 2);
         recordButton.disabled = false;
       };
       recordButton.disabled = true;
       status.textContent = 'Recording the full draw';
+      window.document.querySelector('#summary').textContent = '';
       recorder.start(1000);
       document.querySelector('#draw-button').click();
       timer = setInterval(() => {
         measurements.push({ milliseconds: Math.round(performance.now() - started), ...canvas.dataset });
-        if (canvas.dataset.phase === 'complete' && !ending) {
+        if (canvas.dataset.phase !== 'idle' && canvas.dataset.phase !== 'complete') startedDrawing = true;
+        if (startedDrawing && canvas.dataset.phase === 'complete' && !ending) {
           ending = true;
           setTimeout(() => recorder.stop(), 500);
         }

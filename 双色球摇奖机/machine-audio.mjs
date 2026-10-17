@@ -124,8 +124,9 @@ export class MachineAudio {
     if (!this.context || !this.enabled || !this.active || this.context.state === 'suspended') return;
     const { red, blue, traveling } = machine;
     const speed = Math.max(red.angularVelocity, blue.angularVelocity);
-    this.motor.gain.setTargetAtTime(clamp(speed / 1.65, 0, 1) * 0.2, time, 0.12);
-    this.motorSource?.playbackRate.setTargetAtTime(0.72 + clamp(speed / 1.65, 0, 1) * 0.28, time, 0.16);
+    const motorLevel = clamp(speed / (machine.mixingSpeed ?? 6), 0, 1);
+    this.motor.gain.setTargetAtTime(motorLevel * 0.2, time, 0.12);
+    this.motorSource?.playbackRate.setTargetAtTime(0.72 + motorLevel * 0.28, time, 0.16);
     for (const [index, chamber] of [red, blue].entries()) {
       this.pendingImpact[index] = Math.max(this.pendingImpact[index], chamber.impact);
       if (this.pendingImpact[index] > 0.8 && time >= this.nextImpact[index]) {

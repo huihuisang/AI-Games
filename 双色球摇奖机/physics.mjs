@@ -1,6 +1,16 @@
 const TAU = Math.PI * 2;
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
+function seededRandom(seed) {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let value = Math.imul(state ^ state >>> 15, 1 | state);
+    value ^= value + Math.imul(value ^ value >>> 7, 61 | value);
+    return ((value ^ value >>> 14) >>> 0) / 0x100000000;
+  };
+}
+
 export function resolveCollision(a, b) {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
@@ -54,12 +64,26 @@ export class Chamber {
       }
     }
     candidates.sort((a, b) => b.y - a.y || a.x - b.x);
+    const random = options.seed === undefined ? null : seededRandom(options.seed);
+    let rotation = 0;
+    if (random) {
+      this.angle = random() * TAU;
+      rotation = random() * TAU;
+      for (let index = candidates.length - 1; index > 0; index--) {
+        const other = Math.floor(random() * (index + 1));
+        [candidates[index], candidates[other]] = [candidates[other], candidates[index]];
+      }
+    }
     const numbers = options.numbers ?? Array.from({ length: count }, (_, index) => index + 1);
     for (let i = 0; i < count; i++) {
       const point = candidates[i];
       if (!point) throw new RangeError('Chamber is too small');
-      this.balls.push({ number: numbers[i], x: bounds.x + point.x, y: bounds.y + point.y,
-        vx: 0, vy: 0, radius: ballRadius, angle: 0, spin: 0 });
+      const x = point.x * Math.cos(rotation) - point.y * Math.sin(rotation);
+      const y = point.x * Math.sin(rotation) + point.y * Math.cos(rotation);
+      this.balls.push({ number: numbers[i], x: bounds.x + x, y: bounds.y + y,
+        vx: random ? (random() - 0.5) * bounds.radius : 0,
+        vy: random ? (random() - 0.5) * bounds.radius : 0, radius: ballRadius,
+        angle: random ? random() * TAU : 0, spin: random ? (random() - 0.5) * 8 : 0 });
     }
   }
 
