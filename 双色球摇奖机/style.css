@@ -105,11 +105,10 @@ dialog::backdrop { background: #43291f66; backdrop-filter: blur(4px); }
 #preset-editor legend { width: 100%; font-size: 14px; font-weight: 650; }
 #preset-editor legend span { float: right; color: #978672; font-size: 12px; font-weight: 400; }
 .number-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
-.number-grid button { min-width: 0; min-height: 44px; border: 1px solid #ead9c3; border-radius: 50%; background: #fffdf7; color: #925f51; font: inherit; font-size: 14px; font-variant-numeric: tabular-nums; padding: 4px; }
-.number-grid button[aria-pressed="true"] { background: #f66069; color: white; border-color: #f66069; font-weight: 700; }
-.number-grid button:disabled { opacity: .35; cursor: default; }
-.blue-number-grid button { color: #477496; }
-.blue-number-grid button[aria-pressed="true"] { background: #468fe8; border-color: #468fe8; color: white; }
+.number-grid button { display: grid; place-items: center; min-width: 0; min-height: 44px; aspect-ratio: 1; border: 0; border-radius: 50%; background: url("assets/red-ball-small.webp") center / 106% no-repeat; color: white; font: inherit; font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; text-shadow: 0 1px 1px #9f282a30; padding: 4px; opacity: .7; appearance: none; }
+.number-grid button[aria-pressed="true"] { opacity: 1; }
+.number-grid button:disabled { cursor: default; -webkit-text-fill-color: currentColor; }
+.blue-number-grid button { background-image: url("assets/blue-ball-small.webp"); }
 #preset-error { color: #ac3d3d; font-size: 12px; margin-top: 12px; line-height: 1.5; }
 .preset-editor-actions { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; padding: 12px 20px 16px; border-top: 1px solid #eadfc9; }
 #cancel-preset { min-height: 44px; border: 0; border-radius: 16px; background: #efe4d1; color: #806447; font-size: 14px; }
