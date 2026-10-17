@@ -47,7 +47,8 @@ audio.setEnabled(soundEnabled);
 function updateSoundButton() {
   soundButton.setAttribute('aria-pressed', String(soundEnabled));
   soundButton.setAttribute('aria-label', soundEnabled ? '关闭音效' : '开启音效');
-  soundButton.querySelector('img').src = `assets/speaker-${soundEnabled ? 'high' : 'slash'}-fill.svg`;
+  soundButton.title = soundEnabled ? '关闭音效' : '开启音效';
+  soundButton.querySelector('img').src = `assets/controls/sound-${soundEnabled ? 'on' : 'off'}.webp`;
 }
 updateSoundButton();
 soundButton.addEventListener('click', async () => {
@@ -194,6 +195,16 @@ function resize() {
   const scale = Math.min(window.devicePixelRatio || 1, 2);
   canvas.width = Math.max(1, Math.round(rect.width * scale));
   canvas.height = Math.max(1, Math.round(rect.height * scale));
+  if (geometry) {
+    const fit = Math.min(rect.width / 1140, rect.height / geometry.height);
+    const accessories = document.querySelector('#machine-accessories');
+    const artworkTop = rect.top + (rect.height - geometry.height * fit) / 2;
+    const headingBottom = document.querySelector('.intro').getBoundingClientRect().bottom;
+    accessories.style.width = `${rect.width}px`;
+    accessories.style.height = `${geometry.height * fit}px`;
+    accessories.style.setProperty('--heading-clearance', `${headingBottom + 14 - artworkTop}px`);
+    accessories.style.setProperty('--mascot-clearance', `${8 - artworkTop}px`);
+  }
   paint();
 }
 new ResizeObserver(resize).observe(canvas);

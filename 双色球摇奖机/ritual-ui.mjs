@@ -20,12 +20,17 @@ export function createRitualUI({ readStorage, writeStorage, onChange }) {
 
   async function loadArtwork(ritual) {
     if (!artwork.has(ritual.id)) {
-      artwork.set(ritual.id, fetch(ritual.art, { signal: globalThis.AbortSignal?.timeout?.(3000) }).then(async response => {
-        if (!response.ok) throw new Error('Ceremony artwork could not be loaded');
-        const document = new DOMParser().parseFromString(await response.text(), 'image/svg+xml');
-        if (document.querySelector('parsererror')) throw new Error('Invalid ceremony artwork');
-        return document.documentElement;
-      }).catch(() => null));
+      const image = new Image();
+      image.src = ritual.art;
+      image.alt = '';
+      let timeout;
+      const decoded = image.decode().then(() => image, () => null);
+      const deadline = new Promise(resolve => { timeout = setTimeout(() => resolve(null), 3000); });
+      artwork.set(ritual.id, Promise.race([decoded, deadline]).then(result => {
+        clearTimeout(timeout);
+        if (!result) artwork.delete(ritual.id);
+        return result;
+      }));
     }
     return artwork.get(ritual.id);
   }
@@ -33,7 +38,7 @@ export function createRitualUI({ readStorage, writeStorage, onChange }) {
   function render() {
     const art = document.querySelector('#current-ritual-art');
     art.hidden = !selected.art;
-    if (selected.art) art.src = selected.art;
+    if (selected.art) art.src = selected.thumbnail ?? selected.art;
     document.querySelector('#current-ritual').textContent = selected.name;
     trigger.setAttribute('aria-label', `开奖仪式：${selected.name}，点击更换`);
     options.querySelectorAll('button').forEach(button => {
@@ -56,7 +61,7 @@ export function createRitualUI({ readStorage, writeStorage, onChange }) {
     button.dataset.ritual = ritual.id;
     button.className = 'ritual-option';
     const art = document.createElement('img');
-    art.src = ritual.art;
+    art.src = ritual.thumbnail ?? ritual.art;
     art.alt = '';
     art.width = 100;
     art.height = 100;
@@ -107,15 +112,9 @@ export function createRitualUI({ readStorage, writeStorage, onChange }) {
     finishPlayback?.();
     const version = ++playbackVersion;
     const ritual = selected;
-    const svg = await loadArtwork(ritual);
-    if (version !== playbackVersion) return;
-    if (svg) hero.replaceChildren(svg.cloneNode(true));
-    else {
-      const image = document.createElement('img');
-      image.src = ritual.art;
-      image.alt = '';
-      hero.replaceChildren(image);
-    }
+    const image = await loadArtwork(ritual);
+    if (version !== playbackVersion || !image) return;
+    hero.replaceChildren(image.cloneNode());
     card.dataset.ritual = ritual.id;
     for (const name of ['eyebrow', 'title', 'caption', 'seal']) {
       document.querySelector(`#ritual-${name}`).textContent = ritual[name];
@@ -143,17 +142,6 @@ export function createRitualUI({ readStorage, writeStorage, onChange }) {
         ], { duration, easing: 'linear' });
         if (!reducedMotion) {
           animate(hero, heroFrames(ritual.id), { duration, easing: EASE_MOVE });
-          const part = hero.querySelector('[data-part]');
-          if (part) {
-            const transforms = {
-              caishen: ['translateY(0)', 'translateY(-12px)', 'translateY(0)'],
-              future: ['translateY(0) scale(1)', 'translateY(-14px) scale(1.15)', 'translateY(0) scale(1)'],
-              cat: ['rotate(-9deg)', 'rotate(12deg)', 'rotate(-9deg)'],
-              koi: ['rotate(-8deg)', 'rotate(10deg)', 'rotate(-8deg)'],
-            };
-            animate(part, transforms[ritual.id].map(transform => ({ transform })),
-              { duration: ritual.id === 'future' ? 1800 : 800, iterations: ritual.id === 'future' ? 1 : 3, easing: EASE_MOVE });
-          }
           animate(card.querySelector('.ritual-aura'), [
             { transform: 'scale(.95)', opacity: 0 }, { transform: 'scale(1)', opacity: .8, offset: .3 },
             { transform: 'scale(1.08)', opacity: 0 },
@@ -204,9 +192,9 @@ export function createRitualUI({ readStorage, writeStorage, onChange }) {
 
 function heroFrames(id) {
   const poses = {
-    caishen: ['translateY(12px) scale(.95)', 'translateY(0) rotate(-3deg)', 'translateY(-8px) rotate(3deg)', 'translateY(0)'],
-    future: ['translateY(16px) scale(.95)', 'translateY(-3px) rotate(3deg)', 'translateY(-12px) rotate(-3deg)', 'translateY(-4px)'],
-    cat: ['translateY(12px) scale(.95)', 'translateY(0) rotate(-7deg)', 'translateY(-4px) rotate(7deg)', 'translateY(0) rotate(-4deg)'],
+    caishen: ['translateY(10px) scale(.95)', 'translateY(0) rotate(-1.5deg)', 'translateY(-5px) rotate(1.5deg)', 'translateY(0)'],
+    future: ['translateY(12px) scale(.95)', 'translateY(-3px) rotate(1.5deg)', 'translateY(-8px) rotate(-1.5deg)', 'translateY(-3px)'],
+    cat: ['translateY(10px) scale(.95)', 'translateY(0) rotate(-2deg)', 'translateY(-3px) rotate(2deg)', 'translateY(0) rotate(-1deg)'],
     koi: ['translate(-24px, 18px) rotate(-12deg) scale(.95)', 'translate(8px, -16px) rotate(6deg)', 'translate(0, -24px) rotate(-6deg)', 'translate(0, 0) rotate(0deg)'],
   };
   return poses[id].map((transform, index) => ({ transform, opacity: index === 0 ? 0 : 1,

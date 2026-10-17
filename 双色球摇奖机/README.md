@@ -15,7 +15,7 @@ Open `http://127.0.0.1:4173/双色球摇奖机/` in a browser.
 ## Behavior
 
 - Draw six distinct red numbers from 1 to 33, then one blue number from 1 to 16.
-- Pick a short opening ceremony: the wealth god, a future self, a lucky cat, or a koi. The last choice is saved on this device. Each character has original vector artwork and a 2.6-second scene before mixing starts. Skip or Escape starts the existing draw after preset preparation. Direct draw bypasses the ceremony. Reduced motion uses a short fade; page hiding pauses the scene. Ceremony selection does not read or change number sampling, physics, presets, or history.
+- Pick a short opening ceremony: the wealth god, a future self, a lucky cat, or a koi. The last choice is saved on this device. Each character has a generated transparent 3D collectible render and a 2.6-second scene before mixing starts. Skip or Escape starts the existing draw after preset preparation. Direct draw bypasses the ceremony. Reduced motion uses a short fade; page hiding pauses the scene. Ceremony selection does not read or change number sampling, physics, presets, or history.
 - In fully random mode, use `crypto.getRandomValues` with rejection sampling to shuffle physical ball labels. Physics does not read labels, so every remaining number has the same chance of reaching the outlet.
 - Show the current preset in one row, with a small fixed-number badge when required numbers are active. Tap it to open the preset picker, inspect fixed numbers, or open the manager. Select a saved preset before a draw. Red presets accept 0–6 fixed numbers; blue presets accept one fixed number or remain random. Required numbers appear in the result, and all remaining positions are sampled without replacement.
 - Create, edit, and delete up to 20 named presets. Three editable examples are included. Presets and the last selection are saved on this device. Preset controls are locked during a draw.
@@ -28,6 +28,7 @@ Open `http://127.0.0.1:4173/双色球摇奖机/` in a browser.
 - Use a recorded motor loop and hard-object collision samples. Contact strength drives ball impacts, motor speed drives the low mechanical layer, and actual gate, tube, and tray events drive release sounds. Mute and page hiding stop transient voices; failed audio loading does not block a draw.
 - Keep up to 20 completed draws in local storage. Storage and audio are optional.
 - Fit the main mobile controls in one small viewport height. Shrink the machine to the available space without stretching it, hide the extra title caption, and keep history and the return link in one footer row. Preset and history dialogs can scroll on their own. Very short viewports and enlarged text can still scroll instead of clipping controls.
+- Put the generated sound switch in the upper-left margin and the selected mascot in the upper-right open area. Use the full stage width for their horizontal positions and the fitted artwork height for vertical placement. Keep a 12 px outer inset and at least 14 px below the heading for the sound control. The mascot opens the existing ceremony picker; direct draw uses a neutral emblem. Keep the preset row full width below the results.
 - At widths of 960 px and above, show a persistent history board on the right with its own scroll area. New draws appear at the top. Smaller screens use the history dialog. Both views use the same stored records.
 - Respect reduced motion with a slow motor and no result bounce. Keep essential outlet movement readable and allow the hopper to feed without stalling.
 
@@ -61,6 +62,10 @@ node 双色球摇奖机/qa/randomness-check.mjs
 The machine, mixing paddle, and ball sprites were generated with the built-in imagegen tool from the selected visual reference. The small WebP files are delivery copies. The PNG machine, paddle, and ball atlas are source assets. Chamber and outlet coordinates are in `assets/machine-layout.json`. The visible canvas crops 85 px from the left of the source and uses a 1140 × 1224 view box without image stretching.
 
 The paddle uses source coordinates `(625, 715)` as its rotation center. It rotates behind the balls in the active chamber.
+
+The four ceremony mascots use glossy resin, porcelain, clear acrylic, and champagne-gold details to match the machine. Source PNGs and transparent WebP delivery copies are in `assets/mascots/`; the picker loads 256 px thumbnails and the ceremony decodes its 640 px image before opening. These raster scenes use gentle whole-figure motion and light effects. Previous vector assets remain as design history. Generation prompts are in `assets/mascots/README.md`.
+
+The sound control uses two generated physical switch states with the same cream resin and gold bezel. The on state has speaker waves and a lit amber indicator; mute has a crossed speaker and an unlit indicator. Source images, delivery files, and prompts are in `assets/controls/`.
 
 The sound samples use CC0 recordings from Kenney and supersnd. See `assets/audio/README.md` for source links and delivery edits. The WAV assets total about 530 KiB and load only after an enabled user gesture.
 

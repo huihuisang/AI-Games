@@ -23,9 +23,11 @@ button:disabled { cursor: wait; }
 h1, h2, p { margin: 0; }
 h1 { font-size: clamp(24px, 8.2vw, 36px); font-weight: 900; letter-spacing: -.055em; line-height: 1.4; white-space: nowrap; }
 .intro p { color: var(--muted); font-size: clamp(14px, 4vw, 18px); letter-spacing: .09em; margin-top: 3px; }
-.sound-toggle { flex: 0 0 50px; display: grid; place-items: center; height: 44px; padding: 0; margin-top: 4px; color: #f65f61; border: 1px solid #ffde92; border-radius: 24px; background: #fff1d0; box-shadow: 0 3px 10px #b5852d0d; }
-.sound-toggle img { filter: invert(45%) sepia(65%) saturate(1440%) hue-rotate(320deg) brightness(104%); opacity: .95; }
-.sound-toggle[aria-pressed="true"] { background: #ffe3a6; }
+.machine-accessories { position: absolute; width: 100%; height: 100%; left: 50%; top: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+.machine-accessories > button { pointer-events: auto; }
+.sound-toggle { position: absolute; top: max(-3%, var(--heading-clearance, 0px)); left: 12px; width: clamp(48px, 14%, 56px); aspect-ratio: 1; display: grid; place-items: center; border: 0; border-radius: 15px; background: transparent; padding: 0; margin: 0; transition: transform 120ms cubic-bezier(0.23, 1, 0.32, 1); }
+.sound-toggle img { display: block; width: 100%; height: 100%; }
+.sound-toggle:active { transform: translateY(1px) scale(.96); }
 .machine-stage { width: calc(100% + 36px); margin: 16px -18px 0; position: relative; aspect-ratio: 1140 / 1224; }
 #machine { display: block; width: 100%; height: 100%; }
 .load-message { position: absolute; inset: 45% 0 auto; text-align: center; color: var(--muted); font-size: 14px; }
@@ -117,7 +119,6 @@ dialog::backdrop { background: #43291f66; backdrop-filter: blur(4px); }
   .intro { align-items: center; padding: 0; }
   h1 { font-size: clamp(23px, 6.8vw, 29px); line-height: 1.3; }
   .intro p { display: none; }
-  .sound-toggle { flex-basis: 44px; margin-top: 0; }
   .machine-stage { min-height: 0; width: calc(100% + 32px); height: 100%; aspect-ratio: auto; margin: 0 -16px; }
   .results, .preset-panel, .actions, footer { margin-top: 0; }
   .result-heading h2 { font-size: 14px; }
@@ -152,7 +153,6 @@ dialog::backdrop { background: #43291f66; backdrop-filter: blur(4px); }
 @media (max-width: 350px) {
   .app { padding-left: 16px; padding-right: 16px; }
   .intro { padding-top: 0; }
-  .sound-toggle { flex-basis: 44px; }
   .result-balls { gap: 4px; }
   .draw-button { font-size: 21px; min-height: 58px; }
   .number-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }

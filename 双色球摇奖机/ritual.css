@@ -1,16 +1,12 @@
 :root { --ease-out: cubic-bezier(0.23, 1, 0.32, 1); }
-.draw-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.draw-options .preset-trigger { min-width: 0; gap: 6px; padding: 0 10px; }
-.draw-options .preset-caption { font-size: 10px; }
-.draw-options #current-preset { font-size: 12px; }
-.draw-options #preset-fixed-badge { font-size: 9px; padding: 3px 4px; }
-.ritual-trigger { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 48px; padding: 3px 10px 3px 4px; border: 1px solid #e8d7b7; border-radius: 14px; background: #fff3d8; color: var(--ink); text-align: left; }
-.ritual-trigger > img { flex: 0 0 36px; width: 36px; height: 36px; }
-.ritual-trigger > span:first-of-type { flex: 1; min-width: 0; }
-.ritual-trigger small { display: block; margin-bottom: 2px; color: #8b775b; font-size: 9px; letter-spacing: .06em; }
-.ritual-trigger strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 650; }
+.ritual-trigger { position: absolute; top: max(-15%, var(--mascot-clearance, 0px)); right: 12px; width: clamp(76px, 26%, 112px); display: flex; flex-direction: column; align-items: center; gap: 0; min-height: 44px; padding: 0; border: 0; border-radius: 18px; background: transparent; color: var(--ink); text-align: center; }
+.ritual-trigger > img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; }
+.mascot-label { display: flex; align-items: center; justify-content: center; gap: 5px; max-width: 100%; padding: 4px 9px; border: 1px solid #e5ce9f; border-radius: 20px; background: #fff5dfed; color: #947044; box-shadow: 0 2px 5px #9a6b2110; }
+.ritual-trigger strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; line-height: 1.3; font-weight: 650; }
+.mascot-label > span { font-size: 11px; line-height: 1; }
 .ritual-trigger:disabled { opacity: .55; cursor: default; }
-.ritual-trigger:has(img[hidden]) { padding-left: 12px; }
+.ritual-direct-symbol { display: none; place-items: center; width: 68%; aspect-ratio: 1; margin: 14% 0; color: #c89440; background: radial-gradient(circle at 32% 25%, #fffdf4, #ffe8ac 75%, #dbb268); border: 1px solid #e7ca8b; border-radius: 50%; box-shadow: inset 0 2px 3px white, 0 4px 10px #9a6b2115; font-size: 28px; }
+.ritual-trigger:has(img[hidden]) .ritual-direct-symbol { display: grid; }
 #ritual-picker { width: min(420px, calc(100% - 24px)); padding: 20px; max-height: calc(100svh - 24px); }
 #ritual-picker .dialog-heading h2 { font-size: clamp(17px, 4.8vw, 21px); letter-spacing: -.02em; }
 #ritual-picker-hint { color: #9b876d; margin: 5px 0 18px; font-size: 12px; }
@@ -65,15 +61,11 @@
 .ritual-footnote { color: #ac9d8a; font-size: 10px; }
 @media (hover: hover) and (pointer: fine) {
   .ritual-option:hover { border-color: #c8ad86; background: #fff4dc; }
-  .ritual-trigger:hover { background: #ffeccc; }
+  .ritual-trigger:hover .mascot-label { background: #ffeccc; }
 }
 @media (max-width: 350px) {
-  .draw-options { grid-template-columns: 1fr 1.1fr; gap: 6px; }
-  .draw-options .preset-trigger { gap: 4px; padding: 0 6px; }
-  .draw-options .preset-caption { display: none; }
-  .ritual-trigger { gap: 3px; padding-right: 6px; }
-  .ritual-trigger > img { flex-basis: 30px; width: 30px; height: 30px; }
-  .ritual-trigger strong { font-size: 11px; }
+  .mascot-label { padding: 4px 6px; }
+  .ritual-trigger strong { font-size: 9px; }
   #ritual-picker { padding: 16px; }
 }
 @media (max-height: 650px) {
