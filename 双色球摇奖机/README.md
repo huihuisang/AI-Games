@@ -15,6 +15,7 @@ Open `http://127.0.0.1:4173/双色球摇奖机/` in a browser.
 ## Behavior
 
 - Draw six distinct red numbers from 1 to 33, then one blue number from 1 to 16.
+- Pick a short opening ceremony: the wealth god, a future self, a lucky cat, or a koi. The last choice is saved on this device. Each character has original vector artwork and a 2.6-second scene before mixing starts. Skip or Escape starts the existing draw after preset preparation. Direct draw bypasses the ceremony. Reduced motion uses a short fade; page hiding pauses the scene. Ceremony selection does not read or change number sampling, physics, presets, or history.
 - In fully random mode, use `crypto.getRandomValues` with rejection sampling to shuffle physical ball labels. Physics does not read labels, so every remaining number has the same chance of reaching the outlet.
 - Show the current preset in one row, with a small fixed-number badge when required numbers are active. Tap it to open the preset picker, inspect fixed numbers, or open the manager. Select a saved preset before a draw. Red presets accept 0–6 fixed numbers; blue presets accept one fixed number or remain random. Required numbers appear in the result, and all remaining positions are sampled without replacement.
 - Create, edit, and delete up to 20 named presets. Three editable examples are included. Presets and the last selection are saved on this device. Preset controls are locked during a draw.
@@ -40,6 +41,9 @@ Open `http://127.0.0.1:4173/双色球摇奖机/` in a browser.
 - `presets.mjs`: preset validation, persistence format, conditional sampling, and pre-draw label planning.
 - `preset-worker.mjs`: per-draw preset planning outside the main UI thread.
 - `preset-ui.mjs`: preset selection and mobile editor controls.
+- `rituals.mjs`: opening ceremony catalog and saved selection recovery.
+- `ritual-ui.mjs`: compact character picker, interruptible opening scenes, and completion handoff.
+- `ritual.css`: character picker and ceremony scene styles.
 - `machine-audio.mjs`: local sample loading, motor loop, contact and outlet sounds, gain control, and bounded transient voices.
 - `app.mjs`: canvas rendering, controls, audio integration, and history.
 - `style.css`: responsive page and dialog styles.

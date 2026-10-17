@@ -4,6 +4,7 @@ import { createMachine, stepMachine, FIXED_STEP } from './simulation.mjs';
 import { createPresetPools } from './presets.mjs';
 import { createPresetUI } from './preset-ui.mjs';
 import { MachineAudio } from './machine-audio.mjs';
+import { createRitualUI } from './ritual-ui.mjs';
 
 const canvas = document.querySelector('#machine');
 const context = canvas.getContext('2d');
@@ -22,6 +23,8 @@ const formatNumber = number => String(number).padStart(2, '0');
 const readStorage = key => { try { return localStorage.getItem(key); } catch { return null; } };
 const writeStorage = (key, value) => { try { localStorage.setItem(key, value); } catch { /* Storage is optional. */ } };
 const presetUI = createPresetUI({ readStorage, writeStorage });
+const ritualUI = createRitualUI({ readStorage, writeStorage,
+  onChange: ritual => { buttonLabel.textContent = ritual.buttonLabel; } });
 let history = restoreHistory(readStorage(HISTORY_KEY));
 let soundEnabled = readStorage(SOUND_KEY) === 'true';
 let sprites;
@@ -146,7 +149,8 @@ function reveal(event) {
     document.querySelector('#history-board-list').scrollTop = 0;
     drawButton.disabled = false;
     presetUI.setLocked(false);
-    buttonLabel.textContent = '再摇一组';
+    ritualUI.setLocked(false);
+    buttonLabel.textContent = ritualUI.getSelected().buttonLabel;
     progressLabel.textContent = '已全部出球';
     status.textContent = activePresetName ? `「${activePresetName}」已出齐，再摇一组试试看` : '本组已出齐，再摇一组试试看';
     canvas.setAttribute('aria-label', `模拟开奖完成，红球 ${draw.red.map(formatNumber).join('、')}，蓝球 ${formatNumber(draw.blue)}`);
@@ -215,23 +219,28 @@ drawButton.addEventListener('click', async () => {
   preparing = true;
   drawButton.disabled = true;
   presetUI.setLocked(true);
+  ritualUI.setLocked(true);
   const preset = presetUI.getSelected();
   const motionMode = reducedMotion.matches;
   try {
-    let plan = null;
+    const ceremony = ritualUI.play({ reducedMotion: motionMode });
+    let planReady = Promise.resolve(null);
     if (preset) {
       buttonLabel.textContent = '准备中…';
       status.textContent = '正在准备号码预设…';
       await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
-      plan = await preparePreset(preset, motionMode);
+      planReady = preparePreset(preset, motionMode);
     }
+    const [plan] = await Promise.all([planReady, ceremony]);
     resetChambers(plan, motionMode);
     activePresetName = preset?.name ?? null;
   } catch {
+    ritualUI.cancel();
     status.textContent = '摇奖准备失败，请重试';
     drawButton.disabled = false;
     presetUI.setLocked(false);
-    buttonLabel.textContent = '开始摇奖';
+    ritualUI.setLocked(false);
+    buttonLabel.textContent = ritualUI.getSelected().buttonLabel;
     preparing = false;
     return;
   }

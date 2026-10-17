@@ -8,6 +8,7 @@
     <title>双色球摇奖机</title>
     <link rel="icon" href="assets/red-ball.webp" />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="ritual.css" />
   </head>
   <body>
     <div class="workspace">
@@ -43,7 +44,11 @@
         </ol>
       </section>
 
-      <section class="preset-panel" aria-label="摇奖预设">
+      <section class="preset-panel draw-options" aria-label="摇奖设置">
+        <button class="ritual-trigger" id="ritual-trigger" type="button" aria-haspopup="dialog" aria-controls="ritual-picker" aria-expanded="false">
+          <img id="current-ritual-art" src="assets/ritual-caishen.svg" alt="" width="30" height="30" />
+          <span><small>开奖仪式</small><strong id="current-ritual">请财神</strong></span><span class="preset-chevron" aria-hidden="true">›</span>
+        </button>
         <button class="preset-trigger" id="preset-trigger" type="button" aria-haspopup="dialog" aria-controls="preset-picker" aria-expanded="false">
           <span class="preset-caption">预设</span><span id="current-preset">完全随机</span><span id="preset-fixed-badge" hidden>含固定号</span><span class="preset-chevron" aria-hidden="true">›</span>
         </button>
@@ -53,7 +58,7 @@
         <p class="status" id="status" role="status" aria-live="polite">准备好，摇出你的随机号码</p>
         <button class="draw-button" id="draw-button" type="button" disabled>
           <img src="assets/play-circle-fill.svg" alt="" width="28" height="28" />
-          <span>开始摇奖</span>
+          <span>请财神开奖</span>
         </button>
       </div>
 
@@ -69,6 +74,31 @@
     </aside>
     </div>
 
+    <dialog id="ritual-picker" aria-labelledby="ritual-picker-title" aria-describedby="ritual-picker-hint">
+      <div class="dialog-heading"><h2 id="ritual-picker-title">今天，请谁来开奖？</h2><button id="close-ritual-picker" type="button">关闭</button></div>
+      <p id="ritual-picker-hint">一点仪式感，图个好心情</p>
+      <div class="ritual-options" id="ritual-options" role="group" aria-label="选择开奖角色"></div>
+      <button id="ritual-direct" type="button" aria-pressed="false">直接摇奖 <span>今天靠自己</span></button>
+    </dialog>
+    <dialog id="ritual-stage" aria-labelledby="ritual-title" aria-describedby="ritual-caption">
+      <div class="ritual-card" id="ritual-card" data-ritual="caishen">
+        <div class="ritual-topline"><span>好 运 正 在 派 送</span><button id="skip-ritual" type="button" autofocus>跳过仪式 ›</button></div>
+        <div class="ritual-scene" aria-hidden="true">
+          <div class="ritual-orbit orbit-back"></div><div class="ritual-orbit orbit-front"></div>
+          <div class="ritual-aura"></div>
+          <span class="ritual-spark spark-one">✦</span><span class="ritual-spark spark-two">✧</span><span class="ritual-spark spark-three">✦</span>
+          <span class="ritual-token token-one"></span><span class="ritual-token token-two"></span><span class="ritual-token token-three"></span>
+          <div id="ritual-hero"><img src="assets/ritual-caishen.svg" alt="" width="280" height="280" /></div>
+          <div class="ritual-seal" id="ritual-seal">福气到账</div>
+          <div class="ritual-floor"></div>
+        </div>
+        <p class="ritual-eyebrow" id="ritual-eyebrow">财神专程来一趟</p>
+        <h2 id="ritual-title">把福气，交到你手上</h2>
+        <p id="ritual-caption">接住这份好心情，准备开个好头。</p>
+        <div class="ritual-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+        <p class="ritual-footnote">仪式结束后，自动开始摇奖</p>
+      </div>
+    </dialog>
     <dialog id="history-dialog" aria-labelledby="history-title">
       <div class="dialog-heading"><h2 id="history-title">历史记录</h2><button id="close-history" type="button">关闭</button></div>
       <p class="history-hint">最近 20 次 · 仅保存在此设备</p>
