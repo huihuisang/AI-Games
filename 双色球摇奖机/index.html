@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#fff8eb" />
+    <meta name="description" content="一台奶油色的卡通双色球摇奖机，看小球滚动碰撞，逐个摇出 6 个红球和 1 个蓝球。" />
+    <title>双色球摇奖机</title>
+    <link rel="icon" href="assets/red-ball.webp" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="workspace">
+    <main class="app">
+      <header class="intro">
+        <div>
+          <h1>双色球摇奖机</h1>
+          <p>转一转，随机出一组</p>
+        </div>
+        <button class="sound-toggle" id="sound-toggle" type="button" aria-label="开启音效" aria-pressed="false">
+          <img src="assets/speaker-slash-fill.svg" alt="" width="25" height="25" />
+        </button>
+      </header>
+
+      <section class="machine-stage" aria-label="红蓝双球舱摇奖机">
+        <canvas id="machine" width="1285" height="1224" role="img" aria-label="透明球舱里的红球和蓝球，准备开始摇奖"></canvas>
+        <p class="load-message" id="load-message" role="status">摇奖机准备中…</p>
+      </section>
+
+      <section class="results" aria-labelledby="result-title">
+        <div class="result-heading">
+          <h2 id="result-title">本次模拟号码</h2>
+          <span id="draw-progress">6 红 + 1 蓝</span>
+        </div>
+        <ol class="result-balls" id="result-balls" aria-label="模拟号码，按出球顺序">
+          <li class="result-ball is-empty" data-color="red"><span>?</span></li>
+          <li class="result-ball is-empty" data-color="red"><span>?</span></li>
+          <li class="result-ball is-empty" data-color="red"><span>?</span></li>
+          <li class="result-ball is-empty" data-color="red"><span>?</span></li>
+          <li class="result-ball is-empty" data-color="red"><span>?</span></li>
+          <li class="result-ball is-empty" data-color="red"><span>?</span></li>
+          <li class="result-ball is-empty" data-color="blue"><span>?</span></li>
+        </ol>
+      </section>
+
+      <section class="preset-panel" aria-label="摇奖预设">
+        <div class="preset-toolbar">
+          <label for="preset-select">号码预设</label>
+          <select id="preset-select" aria-describedby="preset-summary"><option value="random">完全随机</option></select>
+          <button id="manage-presets" type="button">管理</button>
+        </div>
+        <p id="preset-summary">6 个红球和 1 个蓝球全部随机</p>
+      </section>
+
+      <div class="actions">
+        <p class="status" id="status" role="status" aria-live="polite">准备好，摇出你的随机号码</p>
+        <button class="draw-button" id="draw-button" type="button" disabled>
+          <img src="assets/play-circle-fill.svg" alt="" width="28" height="28" />
+          <span>开始摇奖</span>
+        </button>
+        <button class="history-button" id="history-button" type="button">历史记录</button>
+      </div>
+
+      <footer><p>仅供模拟体验</p><a href="../index.html">返回游戏集</a></footer>
+    </main>
+    <aside class="history-board" aria-labelledby="history-board-title">
+      <div class="history-board-heading">
+        <div><h2 id="history-board-title">开奖记录</h2><p>最近 20 次 · 仅保存在此设备</p></div>
+        <span id="history-board-count" aria-live="polite">0 组</span>
+      </div>
+      <div id="history-board-empty"><p>还没有开奖记录</p><span>完成一次摇奖，就会出现在这里</span></div>
+      <ol id="history-board-list" aria-label="最近模拟开奖记录" tabindex="0"></ol>
+    </aside>
+    </div>
+
+    <dialog id="history-dialog" aria-labelledby="history-title">
+      <div class="dialog-heading"><h2 id="history-title">历史记录</h2><button id="close-history" type="button">关闭</button></div>
+      <p class="history-hint">最近 20 次 · 仅保存在此设备</p>
+      <p id="history-empty">还没有摇奖记录，去摇一组吧。</p>
+      <ol id="history-list"></ol>
+    </dialog>
+    <dialog id="presets-dialog" aria-labelledby="presets-title">
+      <div class="dialog-heading preset-dialog-heading"><h2 id="presets-title">管理预设</h2><button id="close-presets" type="button">关闭</button></div>
+      <div id="preset-manager">
+        <p class="preset-help">指定的号码会包含在结果中，其余随机补齐。预设仅保存在此设备。</p>
+        <ul id="preset-list"></ul>
+        <p id="preset-list-empty" hidden>还没有预设，新建一个吧。</p>
+        <button class="preset-primary" id="new-preset" type="button">新建预设</button>
+      </div>
+      <form id="preset-editor" hidden>
+        <div class="preset-editor-content">
+          <label class="preset-name-label" for="preset-name">预设名称</label>
+          <input id="preset-name" name="preset-name" type="text" maxlength="20" autocomplete="off" required placeholder="例如：我的幸运号码" />
+          <fieldset>
+            <legend>指定红球 <span id="red-selection-count">0 / 6</span></legend>
+            <p class="preset-help">选 0–6 个，没选满的部分随机补齐</p>
+            <div class="number-grid" id="red-number-grid" aria-label="指定红球号码"></div>
+          </fieldset>
+          <fieldset>
+            <legend>指定蓝球 <span id="blue-selection-count">随机</span></legend>
+            <p class="preset-help">选 1 个，或留空随机；再次点击可取消</p>
+            <div class="number-grid blue-number-grid" id="blue-number-grid" aria-label="指定蓝球号码"></div>
+          </fieldset>
+          <p id="preset-error" role="status" aria-live="polite"></p>
+        </div>
+        <div class="preset-editor-actions"><button id="cancel-preset" type="button">取消</button><button class="preset-primary" type="submit">保存并使用</button></div>
+      </form>
+    </dialog>
+    <noscript><p class="noscript">请开启 JavaScript 来启动摇奖机。</p></noscript>
+    <script type="module" src="app.mjs"></script>
+  </body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Machine Motion Capture</title>
+  <style>
+    body { margin: 20px; background: #eee9df; color: #43291f; font: 14px system-ui; }
+    button, a { padding: 12px; margin-right: 12px; }
+    iframe { display: block; border: 0; width: 390px; height: 844px; margin-top: 20px; }
+    #status { margin: 20px 0; }
+  </style>
+  <button id="record" disabled>Record draw</button>
+  <a id="download" hidden>Download recording</a>
+  <a id="metrics" hidden>Download measurements</a>
+  <p id="status" role="status">Loading machine</p>
+  <iframe src="../index.html" title="Mobile machine preview"></iframe>
+  <script type="module">
+    const frame = document.querySelector('iframe');
+    const recordButton = document.querySelector('#record');
+    const status = document.querySelector('#status');
+    let timer;
+    frame.addEventListener('load', () => {
+      const ready = setInterval(() => {
+        if (frame.contentDocument.querySelector('#draw-button')?.disabled === false) {
+          clearInterval(ready);
+          recordButton.disabled = false;
+          status.textContent = 'Ready to record the live canvas';
+        }
+      }, 100);
+    });
+    recordButton.addEventListener('click', () => {
+      const document = frame.contentDocument;
+      const canvas = document.querySelector('canvas');
+      const stream = canvas.captureStream(30);
+      const mimeType = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4']
+        .find(type => MediaRecorder.isTypeSupported(type));
+      const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 1600000 });
+      const chunks = [];
+      const measurements = [];
+      const started = performance.now();
+      let ending = false;
+      recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
+      recorder.onstop = () => {
+        clearInterval(timer);
+        stream.getTracks().forEach(track => track.stop());
+        const video = window.document.querySelector('#download');
+        video.href = URL.createObjectURL(new Blob(chunks, { type: mimeType }));
+        video.download = mimeType.includes('mp4') ? 'machine-motion.mp4' : 'machine-motion.webm';
+        video.hidden = false;
+        const metrics = window.document.querySelector('#metrics');
+        metrics.href = URL.createObjectURL(new Blob([JSON.stringify(measurements, null, 2)], { type: 'application/json' }));
+        metrics.download = 'motion-measurements.json';
+        metrics.hidden = false;
+        status.textContent = `Recording complete: ${((performance.now() - started) / 1000).toFixed(1)} seconds`;
+        recordButton.disabled = false;
+      };
+      recordButton.disabled = true;
+      status.textContent = 'Recording the full draw';
+      recorder.start(1000);
+      document.querySelector('#draw-button').click();
+      timer = setInterval(() => {
+        measurements.push({ milliseconds: Math.round(performance.now() - started), ...canvas.dataset });
+        if (canvas.dataset.phase === 'complete' && !ending) {
+          ending = true;
+          setTimeout(() => recorder.stop(), 500);
+        }
+        if (performance.now() - started > 90000 && !ending) {
+          ending = true;
+          recorder.stop();
+        }
+      }, 100);
+    });
+  </script>
+</html>

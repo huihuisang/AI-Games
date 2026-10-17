@@ -1,0 +1,42 @@
+{
+  "image": "machine.png",
+  "width": 1285,
+  "height": 1224,
+  "background": "#fff8eb",
+  "geometrySource": "Visual measurement of the generated raster; chamber bounds are conservative interior bounds.",
+  "redChamber": {
+    "centerX": 552,
+    "centerY": 480,
+    "radiusX": 362,
+    "radiusY": 310,
+    "safeCircleRadius": 304,
+    "suggestedBallRadius": 37
+  },
+  "blueChamber": {
+    "centerX": 1061,
+    "centerY": 620,
+    "radiusX": 121,
+    "radiusY": 112,
+    "safeCircleRadius": 110,
+    "suggestedBallRadius": 27
+  },
+  "redOutletPath": [
+    [552, 746],
+    [553, 795],
+    [555, 857],
+    [556, 914],
+    [565, 984],
+    [604, 1028],
+    [651, 1045]
+  ],
+  "blueOutletPath": [
+    [1061, 717],
+    [1058, 759],
+    [1055, 810],
+    [1063, 876],
+    [1045, 932],
+    [999, 965],
+    [938, 979],
+    [862, 982]
+  ]
+}
