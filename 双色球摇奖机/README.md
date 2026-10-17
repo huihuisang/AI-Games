@@ -16,7 +16,7 @@ Open `http://127.0.0.1:4173/双色球摇奖机/` in a browser.
 
 - Draw six distinct red numbers from 1 to 33, then one blue number from 1 to 16.
 - In fully random mode, use `crypto.getRandomValues` with rejection sampling to shuffle physical ball labels. Physics does not read labels, so every remaining number has the same chance of reaching the outlet.
-- Select a saved preset before a draw. Red presets accept 0–6 fixed numbers; blue presets accept one fixed number or remain random. Required numbers appear in the result, and all remaining positions are sampled without replacement.
+- Show only the current preset in the main view. Tap it to open the preset picker, inspect fixed numbers, or open the manager. Select a saved preset before a draw. Red presets accept 0–6 fixed numbers; blue presets accept one fixed number or remain random. Required numbers appear in the result, and all remaining positions are sampled without replacement.
 - Create, edit, and delete up to 20 named presets. Three editable examples are included. Presets and the last selection are saved on this device. Preset controls are locked during a draw.
 - Drive the balls by contact with three rotating paddle arms. Gravity, wall collisions, friction, and spin make the balls lift, tumble, and fall.
 - Open the bottom gate for one ball. Start its tube motion at its actual capture position. Reveal its number only after it rolls down the tube, bumps the tray, and settles.
@@ -24,6 +24,7 @@ Open `http://127.0.0.1:4173/双色球摇奖机/` in a browser.
 - Pause the animation when the page is hidden. Resume without skipping balls.
 - Use a recorded motor loop and hard-object collision samples. Contact strength drives ball impacts, motor speed drives the low mechanical layer, and actual gate, tube, and tray events drive release sounds. Mute and page hiding stop transient voices; failed audio loading does not block a draw.
 - Keep up to 20 completed draws in local storage. Storage and audio are optional.
+- Fit the main mobile controls in one small viewport height. Shrink the machine to the available space without stretching it, hide the extra title caption, and keep history and the return link in one footer row. Preset and history dialogs can scroll on their own. Very short viewports and enlarged text can still scroll instead of clipping controls.
 - At widths of 960 px and above, show a persistent history board on the right with its own scroll area. New draws appear at the top. Smaller screens use the history dialog. Both views use the same stored records.
 - Respect reduced motion with a slow motor and no result bounce. Keep essential outlet movement readable and allow the hopper to feed without stalling.
 

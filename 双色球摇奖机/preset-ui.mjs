@@ -8,6 +8,8 @@ export function createPresetUI({ readStorage, writeStorage }) {
   let editingId = null;
   let selectedRed = new Set();
   let selectedBlue = null;
+  const trigger = document.querySelector('#preset-trigger');
+  const picker = document.querySelector('#preset-picker');
   const select = document.querySelector('#preset-select');
   const manageButton = document.querySelector('#manage-presets');
   const dialog = document.querySelector('#presets-dialog');
@@ -33,6 +35,7 @@ export function createPresetUI({ readStorage, writeStorage }) {
     state.presets.forEach(preset => select.add(new Option(preset.name, preset.id)));
     select.value = state.selectedId;
     const selected = state.presets.find(preset => preset.id === state.selectedId);
+    document.querySelector('#current-preset').textContent = selected?.name ?? '完全随机';
     document.querySelector('#preset-summary').textContent = selected
       ? `${describe(selected)}，${selected.red.length === 6 && selected.blue !== null ? '全部号码已指定' : '其余随机'}`
       : '6 个红球和 1 个蓝球全部随机';
@@ -122,8 +125,16 @@ export function createPresetUI({ readStorage, writeStorage }) {
     }
   }
 
-  select.addEventListener('change', () => { state = { ...state, selectedId: select.value }; persist(); });
-  manageButton.addEventListener('click', () => { showManager(); dialog.showModal(); });
+  trigger.addEventListener('click', () => { picker.showModal(); trigger.setAttribute('aria-expanded', 'true'); });
+  picker.addEventListener('close', () => trigger.setAttribute('aria-expanded', 'false'));
+  picker.addEventListener('click', event => {
+    if (event.target !== picker) return;
+    const rect = picker.getBoundingClientRect();
+    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) picker.close();
+  });
+  document.querySelector('#close-preset-picker').addEventListener('click', () => picker.close());
+  select.addEventListener('change', () => { state = { ...state, selectedId: select.value }; persist(); picker.close(); });
+  manageButton.addEventListener('click', () => { picker.close(); showManager(); dialog.showModal(); });
   document.querySelector('#close-presets').addEventListener('click', () => dialog.close());
   document.querySelector('#new-preset').addEventListener('click', () => openEditor());
   document.querySelector('#cancel-preset').addEventListener('click', showManager);
@@ -145,6 +156,11 @@ export function createPresetUI({ readStorage, writeStorage }) {
       const preset = state.presets.find(item => item.id === state.selectedId);
       return preset ? { ...preset, red: [...preset.red] } : null;
     },
-    setLocked(locked) { select.disabled = locked; manageButton.disabled = locked; },
+    setLocked(locked) {
+      trigger.disabled = locked;
+      select.disabled = locked;
+      manageButton.disabled = locked;
+      if (locked && picker.open) picker.close();
+    },
   };
 }

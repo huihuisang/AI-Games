@@ -104,8 +104,9 @@ function paint() {
   if (!ready) return;
   context.setTransform(1, 0, 0, 1, 0, 0);
   context.clearRect(0, 0, canvas.width, canvas.height);
-  const scale = canvas.width / 1140;
-  context.setTransform(scale, 0, 0, canvas.height / geometry.height, -85 * scale, 0);
+  const scale = Math.min(canvas.width / 1140, canvas.height / geometry.height);
+  context.setTransform(scale, 0, 0, scale, (canvas.width - 1140 * scale) / 2 - 85 * scale,
+    (canvas.height - geometry.height * scale) / 2);
   context.drawImage(sprites.machine, 0, 0, geometry.width, geometry.height);
   drawChamber(redChamber, false);
   drawChamber(blueChamber, true);

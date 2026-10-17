@@ -44,12 +44,9 @@
       </section>
 
       <section class="preset-panel" aria-label="摇奖预设">
-        <div class="preset-toolbar">
-          <label for="preset-select">号码预设</label>
-          <select id="preset-select" aria-describedby="preset-summary"><option value="random">完全随机</option></select>
-          <button id="manage-presets" type="button">管理</button>
-        </div>
-        <p id="preset-summary">6 个红球和 1 个蓝球全部随机</p>
+        <button class="preset-trigger" id="preset-trigger" type="button" aria-haspopup="dialog" aria-controls="preset-picker" aria-expanded="false">
+          <span class="preset-caption">预设</span><span id="current-preset">完全随机</span><span class="preset-chevron" aria-hidden="true">›</span>
+        </button>
       </section>
 
       <div class="actions">
@@ -58,10 +55,9 @@
           <img src="assets/play-circle-fill.svg" alt="" width="28" height="28" />
           <span>开始摇奖</span>
         </button>
-        <button class="history-button" id="history-button" type="button">历史记录</button>
       </div>
 
-      <footer><p>仅供模拟体验</p><a href="../index.html">返回游戏集</a></footer>
+      <footer><button class="history-button" id="history-button" type="button">历史记录</button><p>仅供模拟体验</p><a href="../index.html">返回游戏集</a></footer>
     </main>
     <aside class="history-board" aria-labelledby="history-board-title">
       <div class="history-board-heading">
@@ -78,6 +74,15 @@
       <p class="history-hint">最近 20 次 · 仅保存在此设备</p>
       <p id="history-empty">还没有摇奖记录，去摇一组吧。</p>
       <ol id="history-list"></ol>
+    </dialog>
+    <dialog id="preset-picker" aria-labelledby="preset-picker-title">
+      <div class="dialog-heading"><h2 id="preset-picker-title">摇奖预设</h2><button id="close-preset-picker" type="button">关闭</button></div>
+      <div class="preset-toolbar">
+        <label for="preset-select">当前预设</label>
+        <select id="preset-select" aria-describedby="preset-summary"><option value="random">完全随机</option></select>
+      </div>
+      <p id="preset-summary">6 个红球和 1 个蓝球全部随机</p>
+      <button class="preset-manage" id="manage-presets" type="button">管理预设</button>
     </dialog>
     <dialog id="presets-dialog" aria-labelledby="presets-title">
       <div class="dialog-heading preset-dialog-heading"><h2 id="presets-title">管理预设</h2><button id="close-presets" type="button">关闭</button></div>
