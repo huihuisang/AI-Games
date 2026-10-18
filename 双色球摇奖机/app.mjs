@@ -6,8 +6,8 @@ import { createPresetUI } from './preset-ui.mjs';
 import { MachineAudio } from './machine-audio.mjs';
 import { createRitualUI } from './ritual-ui.mjs';
 import { createMascotVoice } from './mascot-lines.mjs';
-import { createTicketUI } from './ticket-ui.mjs?v=guardian-6';
-import { createGameMotion } from './game-motion.mjs';
+import { createTicketUI } from './ticket-ui.mjs?v=reward-3';
+import { createGameMotion } from './game-motion.mjs?v=reward-3';
 
 const canvas = document.querySelector('#machine');
 const context = canvas.getContext('2d');

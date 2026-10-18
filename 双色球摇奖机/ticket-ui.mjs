@@ -1,9 +1,12 @@
-import { createSelectionTicket, drawSelectionTicket, TICKET_SIZE } from './ticket.mjs?v=guardian-6';
+import { createSelectionTicket, drawSelectionTicket, drawSelectionPaper, layoutTicketQuote, TICKET_SIZE, TICKET_PAPER } from './ticket.mjs?v=reward-3';
 
 export function createTicketUI({ onAgain, canSelect = () => true }) {
   const dialog = document.querySelector('#ticket-dialog');
   const image = document.querySelector('#ticket-image');
   const status = document.querySelector('#ticket-status');
+  const content = dialog.querySelector('.reward-content');
+  const hero = document.querySelector('#reward-mascot');
+  const quote = document.querySelector('#reward-quote');
   const save = document.querySelector('#save-ticket');
   const share = document.querySelector('#share-ticket');
   const again = document.querySelector('#ticket-again');
@@ -44,7 +47,10 @@ export function createTicketUI({ onAgain, canSelect = () => true }) {
   function present() {
     again.disabled = !canSelect();
     again.title = again.disabled ? '请等待本次选号完成' : '';
-    if (!dialog.open) dialog.showModal();
+    if (!dialog.open) {
+      dialog.showModal();
+      if (blob) dialog.dispatchEvent(new Event('ticketreveal'));
+    }
   }
 
   async function render(ticket, request) {
@@ -55,14 +61,33 @@ export function createTicketUI({ onAgain, canSelect = () => true }) {
       Object.assign(canvas, TICKET_SIZE);
       drawSelectionTicket(canvas.getContext('2d'), ticket, { backdrop, paper, red, blue, neutral, mascot, brushReady });
       const next = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('Image export failed')), 'image/png'));
+      const crop = document.createElement('canvas');
+      crop.width = TICKET_PAPER.width; crop.height = Math.ceil(TICKET_PAPER.height);
+      const cropContext = crop.getContext('2d');
+      cropContext.translate(-TICKET_PAPER.x, -TICKET_PAPER.y);
+      drawSelectionPaper(cropContext, ticket, paper, red, blue);
+      const preview = new Image(); preview.src = crop.toDataURL('image/png');
+      await preview.decode();
       if (request !== version) return;
       if (url) URL.revokeObjectURL(url);
       blob = next; url = URL.createObjectURL(blob);
-      image.src = url; image.hidden = false;
+      image.src = preview.src; image.hidden = false;
+      hero.src = (mascot ?? neutral).src;
+      const layout = layoutTicketQuote(ticket.line, (value, size) => {
+        canvas.getContext('2d').font = `700 ${size}px ${brushReady ? '"Lucky Brush"' : 'sans-serif'}`;
+        return canvas.getContext('2d').measureText(value).width;
+      });
+      quote.replaceChildren(...layout.lines.map(line => {
+        const span = document.createElement('span'); span.textContent = line; return span;
+      }));
+      quote.style.setProperty('--quote-size', `${layout.size / 9}cqw`);
+      document.querySelector('#reward-signature').textContent = `—— ${ticket.ritual.art ? ticket.ritual.name : '自己也很棒'}`;
+      content.hidden = false;
       image.alt = `我的选号单，红球 ${ticket.red.join('、')}，蓝球 ${ticket.blue}。${ticket.ritual.name}：${ticket.line}`;
       document.querySelector('#ticket-loading').hidden = true;
       save.disabled = false; share.disabled = false;
-      status.textContent = '可保存图片，也可长按选号单保存';
+      status.textContent = '保存完整选号单，把这份好运带走';
+      if (dialog.open) dialog.dispatchEvent(new Event('ticketreveal'));
     } catch {
       if (request !== version) return;
       document.querySelector('#ticket-loading').hidden = true;
@@ -74,6 +99,8 @@ export function createTicketUI({ onAgain, canSelect = () => true }) {
   function show(entry) {
     latest = createSelectionTicket(entry);
     const request = ++version;
+    dialog.dispatchEvent(new Event('ticketreset'));
+    content.hidden = true;
     blob = null; save.disabled = true; share.disabled = true; image.hidden = true;
     document.querySelector('#ticket-loading').hidden = false;
     document.querySelector('#retry-ticket').hidden = true;
@@ -89,7 +116,7 @@ export function createTicketUI({ onAgain, canSelect = () => true }) {
     if (!blob || !url) return;
     const link = document.createElement('a');
     link.href = url; link.download = `${latest.id}.png`; link.click();
-    status.textContent = '已发起保存；手机也可长按选号单存入相册';
+    status.textContent = '已发起保存完整选号单，可在下载中查看';
   }
 
   share.addEventListener('click', async () => {

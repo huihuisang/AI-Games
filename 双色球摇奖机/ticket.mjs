@@ -2,6 +2,7 @@ import { validateDraw } from './draw.mjs';
 import { RITUALS } from './rituals.mjs';
 
 export const TICKET_SIZE = Object.freeze({ width: 900, height: 1700 });
+export const TICKET_PAPER = Object.freeze({ x: 18, y: 1260, width: 864, height: 422.4 });
 const FONT = '"PingFang SC", "Microsoft YaHei", sans-serif';
 
 export function createSelectionTicket(entry) {
@@ -83,12 +84,18 @@ export function drawSelectionTicket(ctx, ticket, art = {}) {
     quote.size, '#6e330e', art.brushReady ? 700 : 850, 'center', brush));
   text(ctx, `—— ${ticket.ritual.art ? ticket.ritual.name : '自己也很棒'}`, 820, 1244, 30, '#895027', 600, 'right');
 
+  drawSelectionPaper(ctx, ticket, art.paper, art.red, art.blue);
+  ctx.restore();
+}
+
+export function drawSelectionPaper(ctx, ticket, paper, red, blue) {
+  ctx.save();
   // The generated plate contains its paper grain, gold edge, and real perforation.
-  ctx.drawImage(art.paper, 18, 1260, 864, 422.4);
+  ctx.drawImage(paper, TICKET_PAPER.x, TICKET_PAPER.y, TICKET_PAPER.width, TICKET_PAPER.height);
   text(ctx, '双色球 · 单式选号', 450, 1335, 31, '#6f4729', 750, 'center');
   [...ticket.red, ticket.blue].forEach((number, index) => {
     const x = 99 + index * 102, y = 1368, size = 90;
-    ctx.drawImage(index === 6 ? art.blue : art.red, x - 3, y - 3, size + 6, size + 6);
+    ctx.drawImage(index === 6 ? blue : red, x - 3, y - 3, size + 6, size + 6);
     text(ctx, String(number).padStart(2, '0'), x + size / 2, y + 61, 43, '#fff', 850, 'center');
   });
   // Align the stub to the measured perforation endpoints on the scaled paper.
