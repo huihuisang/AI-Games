@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#fff8eb" />
-    <meta name="description" content="一台奶油色的卡通双色球摇奖机，看小球滚动碰撞，逐个摇出 6 个红球和 1 个蓝球。" />
-    <title>双色球摇奖机</title>
+    <meta name="description" content="一台奶油色的卡通双色球选号机，看小球滚动碰撞，随机选出 6 个红球和 1 个蓝球。" />
+    <title>双色球选号机</title>
     <link rel="icon" href="assets/red-ball.webp" />
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="ritual.css" />
@@ -16,13 +16,13 @@
     <main class="app">
       <header class="intro">
         <div>
-          <h1>双色球摇奖机</h1>
-          <p>转一转，随机出一组</p>
+          <h1>双色球选号机</h1>
+          <p>转一转，随机选一组</p>
         </div>
       </header>
 
-      <section class="machine-stage" aria-label="红蓝双球舱摇奖机">
-        <canvas id="machine" width="1285" height="1224" role="img" aria-label="透明球舱里的红球和蓝球，准备开始摇奖"></canvas>
+      <section class="machine-stage" aria-label="红蓝双球舱选号机">
+        <canvas id="machine" width="1285" height="1224" role="img" aria-label="透明球舱里的红球和蓝球，准备开始选号"></canvas>
         <div class="machine-accessories" id="machine-accessories">
           <button class="sound-toggle" id="sound-toggle" type="button" aria-label="开启音效" aria-pressed="false" title="开启音效">
             <img src="assets/controls/sound-off.webp" alt="" width="64" height="64" />
@@ -30,15 +30,15 @@
           <button class="ritual-trigger" id="ritual-trigger" type="button" aria-haspopup="dialog" aria-controls="ritual-picker" aria-expanded="false">
             <img id="current-ritual-art" src="assets/mascots/caishen-small.webp" alt="" width="120" height="120" />
             <span class="ritual-direct-symbol" aria-hidden="true">✦</span>
-            <span class="mascot-label"><strong id="current-ritual">请财神</strong><span aria-hidden="true">⌄</span></span>
+            <span class="mascot-label"><strong id="current-ritual">财神爷</strong><span aria-hidden="true">⌄</span></span>
           </button>
         </div>
-        <p class="load-message" id="load-message" role="status">摇奖机准备中…</p>
+        <p class="load-message" id="load-message" role="status">选号机准备中…</p>
       </section>
 
       <section class="results" aria-labelledby="result-title">
         <div class="result-heading">
-          <h2 id="result-title">本次模拟号码</h2>
+          <h2 id="result-title">本次选号</h2>
           <span id="draw-progress">6 红 + 1 蓝</span>
         </div>
         <ol class="result-balls" id="result-balls" aria-label="模拟号码，按出球顺序">
@@ -52,65 +52,65 @@
         </ol>
       </section>
 
-      <section class="preset-panel" aria-label="摇奖设置">
+      <section class="preset-panel" aria-label="选号设置">
         <button class="preset-trigger" id="preset-trigger" type="button" aria-haspopup="dialog" aria-controls="preset-picker" aria-expanded="false">
           <span class="preset-caption">预设</span><span id="current-preset">完全随机</span><span id="preset-fixed-badge" hidden>含固定号</span><span class="preset-chevron" aria-hidden="true">›</span>
         </button>
       </section>
 
       <div class="actions">
-        <p class="status" id="status" role="status" aria-live="polite">准备好，摇出你的随机号码</p>
+        <p class="status" id="status" role="status" aria-live="polite">准备好，选一组自己的号码</p>
         <button class="draw-button" id="draw-button" type="button" disabled>
           <img src="assets/play-circle-fill.svg" alt="" width="28" height="28" />
-          <span>请财神开奖</span>
+          <span>请财神选一组</span>
         </button>
       </div>
 
-      <footer><button class="history-button" id="history-button" type="button">历史记录</button><p>仅供模拟体验</p><a href="../index.html">返回游戏集</a></footer>
+      <footer><button class="history-button" id="history-button" type="button">历史记录</button><p>角色祝福不改变概率</p><a href="../index.html">返回游戏集</a></footer>
     </main>
     <aside class="history-board" aria-labelledby="history-board-title">
       <div class="history-board-heading">
-        <div><h2 id="history-board-title">开奖记录</h2><p>最近 20 次 · 仅保存在此设备</p></div>
+        <div><h2 id="history-board-title">选号记录</h2><p>最近 20 次 · 仅保存在此设备</p></div>
         <span id="history-board-count" aria-live="polite">0 组</span>
       </div>
-      <div id="history-board-empty"><p>还没有开奖记录</p><span>完成一次摇奖，就会出现在这里</span></div>
-      <ol id="history-board-list" aria-label="最近模拟开奖记录" tabindex="0"></ol>
+      <div id="history-board-empty"><p>还没有选号记录</p><span>完成一次选号，就会出现在这里</span></div>
+      <ol id="history-board-list" aria-label="最近模拟选号记录" tabindex="0"></ol>
     </aside>
     </div>
 
     <dialog id="ritual-picker" aria-labelledby="ritual-picker-title" aria-describedby="ritual-picker-hint">
-      <div class="dialog-heading"><h2 id="ritual-picker-title">今天，请谁来开奖？</h2><button id="close-ritual-picker" type="button">关闭</button></div>
-      <p id="ritual-picker-hint">一点仪式感，图个好心情</p>
-      <div class="ritual-options" id="ritual-options" role="group" aria-label="选择开奖角色"></div>
-      <button id="ritual-direct" type="button" aria-pressed="false">直接摇奖 <span>今天靠自己</span></button>
+      <div class="dialog-heading"><h2 id="ritual-picker-title">今天，请谁帮你选一组？</h2><button id="close-ritual-picker" type="button">关闭</button></div>
+      <p id="ritual-picker-hint">请搭子施个法，接住今天的好运</p>
+      <div class="ritual-options" id="ritual-options" role="group" aria-label="选择选号搭子"></div>
+      <button id="ritual-direct" type="button" aria-pressed="false">随机选号 <span>今天自己挑</span></button>
     </dialog>
     <dialog id="ritual-stage" aria-labelledby="ritual-title" aria-describedby="ritual-caption">
       <div class="ritual-card" id="ritual-card" data-ritual="caishen">
-        <div class="ritual-topline"><span>好 运 正 在 派 送</span><button id="skip-ritual" type="button" autofocus>跳过仪式 ›</button></div>
+        <div class="ritual-topline"><span>选 号 搭 子 来 串 门</span><button id="skip-ritual" type="button" autofocus>跳过仪式 ›</button></div>
         <div class="ritual-scene" aria-hidden="true">
           <div class="ritual-orbit orbit-back"></div><div class="ritual-orbit orbit-front"></div>
           <div class="ritual-aura"></div>
           <span class="ritual-spark spark-one">✦</span><span class="ritual-spark spark-two">✧</span><span class="ritual-spark spark-three">✦</span>
           <span class="ritual-token token-one"></span><span class="ritual-token token-two"></span><span class="ritual-token token-three"></span>
           <div id="ritual-hero"></div>
-          <div class="ritual-seal" id="ritual-seal">福气到账</div>
+          <div class="ritual-seal" id="ritual-seal">开门营业</div>
           <div class="ritual-floor"></div>
         </div>
-        <p class="ritual-eyebrow" id="ritual-eyebrow">财神专程来一趟</p>
-        <h2 id="ritual-title">把福气，交到你手上</h2>
-        <p id="ritual-caption">接住这份好心情，准备开个好头。</p>
+        <p class="ritual-eyebrow" id="ritual-eyebrow">财神爷 · 本神给你撑腰</p>
+        <h2 id="ritual-title">老板，这组本神罩着</h2>
+        <p id="ritual-caption">这组号码本神罩着，财运给你撑腰。</p>
         <div class="ritual-dots" aria-hidden="true"><i></i><i></i><i></i></div>
-        <p class="ritual-footnote">仪式结束后，自动开始摇奖</p>
+        <p class="ritual-footnote">角色台词仅供娱乐，实际概率不变<br>仪式结束后，自动开始选号</p>
       </div>
     </dialog>
     <dialog id="history-dialog" aria-labelledby="history-title">
       <div class="dialog-heading"><h2 id="history-title">历史记录</h2><button id="close-history" type="button">关闭</button></div>
       <p class="history-hint">最近 20 次 · 仅保存在此设备</p>
-      <p id="history-empty">还没有摇奖记录，去摇一组吧。</p>
+      <p id="history-empty">还没有选号记录，去选一组吧。</p>
       <ol id="history-list"></ol>
     </dialog>
     <dialog id="preset-picker" aria-labelledby="preset-picker-title">
-      <div class="dialog-heading"><h2 id="preset-picker-title">摇奖预设</h2><button id="close-preset-picker" type="button">关闭</button></div>
+      <div class="dialog-heading"><h2 id="preset-picker-title">选号预设</h2><button id="close-preset-picker" type="button">关闭</button></div>
       <div class="preset-toolbar">
         <label for="preset-select">当前预设</label>
         <select id="preset-select" aria-describedby="preset-summary"><option value="random">完全随机</option></select>
@@ -145,7 +145,7 @@
         <div class="preset-editor-actions"><button id="cancel-preset" type="button">取消</button><button class="preset-primary" type="submit">保存并使用</button></div>
       </form>
     </dialog>
-    <noscript><p class="noscript">请开启 JavaScript 来启动摇奖机。</p></noscript>
+    <noscript><p class="noscript">请开启 JavaScript 来启动选号机。</p></noscript>
     <script type="module" src="app.mjs"></script>
   </body>
 </html>

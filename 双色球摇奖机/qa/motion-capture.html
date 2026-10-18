@@ -9,7 +9,7 @@
     iframe { display: block; border: 0; width: 390px; height: 844px; margin-top: 20px; }
     #status { margin: 20px 0; }
   </style>
-  <button id="record" disabled>Record draw</button>
+  <button id="record" disabled>Record selection</button>
   <a id="download" hidden>Download recording</a>
   <a id="metrics" hidden>Download measurements</a>
   <p id="status" role="status">Loading machine</p>
@@ -67,7 +67,7 @@
         recordButton.disabled = false;
       };
       recordButton.disabled = true;
-      status.textContent = 'Recording the full draw';
+      status.textContent = 'Recording the full selection';
       window.document.querySelector('#summary').textContent = '';
       recorder.start(1000);
       document.querySelector('#draw-button').click();

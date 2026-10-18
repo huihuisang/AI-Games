@@ -5,6 +5,7 @@ import { createPresetPools } from './presets.mjs';
 import { createPresetUI } from './preset-ui.mjs';
 import { MachineAudio } from './machine-audio.mjs';
 import { createRitualUI } from './ritual-ui.mjs';
+import { createMascotVoice } from './mascot-lines.mjs';
 
 const canvas = document.querySelector('#machine');
 const context = canvas.getContext('2d');
@@ -23,6 +24,7 @@ const formatNumber = number => String(number).padStart(2, '0');
 const readStorage = key => { try { return localStorage.getItem(key); } catch { return null; } };
 const writeStorage = (key, value) => { try { localStorage.setItem(key, value); } catch { /* Storage is optional. */ } };
 const presetUI = createPresetUI({ readStorage, writeStorage });
+const mascotVoice = createMascotVoice({ readStorage, writeStorage });
 const ritualUI = createRitualUI({ readStorage, writeStorage,
   onChange: ritual => { buttonLabel.textContent = ritual.buttonLabel; } });
 let history = restoreHistory(readStorage(HISTORY_KEY));
@@ -40,6 +42,7 @@ let machine;
 let accumulator = 0;
 let preparing = false;
 let activePresetName = null;
+let activeRitual = null;
 
 const audio = new MachineAudio();
 audio.setEnabled(soundEnabled);
@@ -152,14 +155,16 @@ function reveal(event) {
     presetUI.setLocked(false);
     ritualUI.setLocked(false);
     buttonLabel.textContent = ritualUI.getSelected().buttonLabel;
-    progressLabel.textContent = '已全部出球';
-    status.textContent = activePresetName ? `「${activePresetName}」已出齐，再摇一组试试看` : '本组已出齐，再摇一组试试看';
-    canvas.setAttribute('aria-label', `模拟开奖完成，红球 ${draw.red.map(formatNumber).join('、')}，蓝球 ${formatNumber(draw.blue)}`);
+    progressLabel.textContent = '号码已选齐';
+    const line = mascotVoice.next(activeRitual?.id);
+    status.classList.toggle('is-mascot-line', Boolean(line));
+    status.textContent = line ? `${activeRitual.name}：${line}` : '这组号码选好了，想换一组也可以';
+    canvas.setAttribute('aria-label', `选号完成，红球 ${draw.red.map(formatNumber).join('、')}，蓝球 ${formatNumber(draw.blue)}`);
     audio.mix(false);
     settleRemaining = 3;
   } else {
     slots[event.index + 1].classList.add('is-next');
-    status.textContent = event.index === 5 ? '红球出齐啦，接下来摇出蓝球' : `红球 ${formatNumber(event.number)} 已出，继续摇下一颗`;
+    status.textContent = event.index === 5 ? '红球已选齐，接下来选蓝球' : `红球 ${formatNumber(event.number)} 已选，继续看下一颗`;
   }
 }
 
@@ -232,9 +237,12 @@ drawButton.addEventListener('click', async () => {
   presetUI.setLocked(true);
   ritualUI.setLocked(true);
   const preset = presetUI.getSelected();
+  const ritual = ritualUI.getSelected();
   const motionMode = reducedMotion.matches;
+  status.classList.remove('is-mascot-line');
+  status.textContent = '正在准备本次选号…';
   try {
-    const ceremony = ritualUI.play({ reducedMotion: motionMode });
+    const ceremony = ritualUI.play({ reducedMotion: motionMode, line: mascotVoice.next(ritual.id) });
     let planReady = Promise.resolve(null);
     if (preset) {
       buttonLabel.textContent = '准备中…';
@@ -245,9 +253,10 @@ drawButton.addEventListener('click', async () => {
     const [plan] = await Promise.all([planReady, ceremony]);
     resetChambers(plan, motionMode);
     activePresetName = preset?.name ?? null;
+    activeRitual = ritual;
   } catch {
     ritualUI.cancel();
-    status.textContent = '摇奖准备失败，请重试';
+    status.textContent = '选号准备失败，请重试';
     drawButton.disabled = false;
     presetUI.setLocked(false);
     ritualUI.setLocked(false);
@@ -263,10 +272,10 @@ drawButton.addEventListener('click', async () => {
     slot.removeAttribute('aria-label');
   });
   progressLabel.textContent = '0 / 7';
-  status.textContent = preset ? `使用「${preset.name}」，先充分混球再开闸` : '正在充分混球，稍后逐个出球';
-  canvas.setAttribute('aria-label', '摇奖中，小球在透明球舱内滚动碰撞');
+  status.textContent = preset ? `使用「${preset.name}」，先混球再选号` : '正在混球，稍后逐个选出号码';
+  canvas.setAttribute('aria-label', '选号中，小球在透明球舱内滚动碰撞');
   drawButton.disabled = true;
-  buttonLabel.textContent = '摇奖中…';
+  buttonLabel.textContent = '选号中…';
   audio.mix(!document.hidden);
   lastFrame = 0;
   requestFrame();

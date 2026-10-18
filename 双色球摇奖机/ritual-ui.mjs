@@ -40,7 +40,7 @@ export function createRitualUI({ readStorage, writeStorage, onChange }) {
     art.hidden = !selected.art;
     if (selected.art) art.src = selected.thumbnail ?? selected.art;
     document.querySelector('#current-ritual').textContent = selected.name;
-    trigger.setAttribute('aria-label', `开奖仪式：${selected.name}，点击更换`);
+    trigger.setAttribute('aria-label', `选号搭子：${selected.name}，点击更换`);
     options.querySelectorAll('button').forEach(button => {
       button.setAttribute('aria-pressed', String(button.dataset.ritual === selected.id));
     });
@@ -107,7 +107,7 @@ export function createRitualUI({ readStorage, writeStorage, onChange }) {
     return animation;
   }
 
-  async function play({ reducedMotion = false } = {}) {
+  async function play({ reducedMotion = false, line = '' } = {}) {
     if (!selected.art) return Promise.resolve();
     finishPlayback?.();
     const version = ++playbackVersion;
@@ -116,9 +116,10 @@ export function createRitualUI({ readStorage, writeStorage, onChange }) {
     if (version !== playbackVersion || !image) return;
     hero.replaceChildren(image.cloneNode());
     card.dataset.ritual = ritual.id;
-    for (const name of ['eyebrow', 'title', 'caption', 'seal']) {
+    for (const name of ['eyebrow', 'title', 'seal']) {
       document.querySelector(`#ritual-${name}`).textContent = ritual[name];
     }
+    document.querySelector('#ritual-caption').textContent = line;
     card.querySelectorAll('.ritual-token').forEach(token => { token.textContent = ritual.token; });
     stage.showModal();
 

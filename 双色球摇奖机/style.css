@@ -61,6 +61,7 @@ h2 { font-size: 16px; font-weight: 750; letter-spacing: .02em; }
 .preset-manage { width: 100%; min-height: 44px; margin-top: 16px; border: 0; border-radius: 14px; background: #f3e7d2; color: #806447; font-size: 14px; }
 select:focus-visible, input:focus-visible { outline: 3px solid #376ca1; outline-offset: 2px; }
 .status { min-height: 22px; font-size: 12px; line-height: 1.6; color: var(--muted); margin-bottom: 12px; }
+.status.is-mascot-line { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: normal; line-height: 1.5; overflow: hidden; }
 .draw-button { display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%; min-height: 64px; padding: 14px 16px; border: 1px solid #ff9697; border-radius: 40px; background: #ff656b; color: white; font-size: 23px; font-weight: 800; letter-spacing: .08em; box-shadow: inset 0 3px 5px #ffffff78, inset 0 -4px 7px #dc3b4333, 0 9px 18px #f56c5926; transition: transform .15s, background .2s; }
 .draw-button img { filter: brightness(0) invert(1); }
 .draw-button:active:not(:disabled) { transform: scale(.98); }
