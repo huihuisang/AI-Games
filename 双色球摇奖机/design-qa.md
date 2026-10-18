@@ -1,89 +1,63 @@
-# Design QA
+# Guardian Slip Design QA
 
 final result: passed
 
-## Wide-Screen History Board
+## Target and Evidence
 
-- At 960 px and above, the page uses a two-column workspace: the drawing machine on the left and a persistent record board on the right. Smaller screens retain the history button and dialog.
-- Both views use the same renderer and history data. The board is populated on page load and refreshed immediately after a completed draw.
-- Actual browser verification at 1280 × 900: history increased from 14 to 15 rows after a real draw. The newest right-side row matched all seven numbers in the main result: 25, 03, 33, 08, 15, 06, and blue 16.
-- The board has its own scroll area. Keyboard PageDown changed its scroll offset while the page offset stayed unchanged. Its header remains in place.
-- At 390 × 844, the board is hidden, the history button remains visible, and the dialog shows the same 15 records. Crossing back to wide layout closes the dialog automatically.
-- Screenshots: `qa/history-board-wide.jpg` and `qa/history-board-mobile.jpg`.
-- The existing 25 logic tests pass. Module syntax and whitespace checks pass.
+- Selected visual truth: `../design/lottery-ticket/mascot-focus/01-guardian-slip.png`, the first generated image displayed to the user.
+- Application: `http://127.0.0.1:4173/双色球摇奖机/`.
+- Browser: Codex in-app browser, operated through CUA. No external browser fallback was used in this iteration.
+- Full application screenshot: `../design/lottery-ticket/mascot-focus/implementation-mobile.png`.
+- Full-view source/application comparison: `../design/lottery-ticket/mascot-focus/implementation-full-comparison.png`.
+- Focused artifact comparison with matching sample quote and numbers: `../design/lottery-ticket/mascot-focus/implementation-comparison.png`.
+- Five renderer states: `../design/lottery-ticket/mascot-focus/implementation-roles.png`.
 
-## Evidence
+## Normalization and State
 
-- Source visual truth: `qa/reference.png`, the first selected Image Gen result.
-- Source size: 853 × 1844 px, normalized to 390 × 844 for comparison.
-- Implementation: `qa/mobile-complete.jpg`, 390 × 844 px at a 390 × 844 CSS viewport. Browser DPR is 2; the screenshot API exports CSS pixel dimensions, so no additional density scaling was applied.
-- State: completed draw with six red balls and one blue ball. Real random values and remaining chamber balls differ from the static concept.
-- Full-view comparison: `qa/comparison.jpg`, source on the left and browser capture on the right.
-- Focused controls comparison: `qa/controls-comparison.jpg`.
-- Other states: `qa/mobile-idle.jpg`, `qa/mobile-drawing.jpg`, `qa/mobile-first-exit.jpg`, `qa/mobile-history.jpg`, and `qa/mobile-320.jpg`.
+The reference is 853 × 1844 pixels and targets a 390 × 844 mobile viewport. The full application capture is 390 × 844 at 1× density. The full-view comparison normalizes the reference to that same viewport. Its live quote, number combination, time, and generated identifier differ because this is an actual completed selection; these are intentionally variable content.
 
-## Findings and Fixes
+The focused comparison removes the external controls from the source and normalizes its artifact region to 390 × 737. A temporary local renderer fixture used the exact production renderer, original mascot assets, actual brush font, source sample quote, red 07/08/21/26/29/30, and blue 15. Its image was captured at 390 × 737 CSS pixels. That fixture did not modify user history or presets. The record ID follows the application's real identifier scheme rather than the concept's hand-written sample.
 
-1. P2, initial machine composition: the first integration lacked the visible mixing paddle. Added a generated transparent paddle and rotate it behind the balls in the active chamber. The final paired comparison shows the restored mechanism.
-2. P2, narrow viewport: the canvas extended 2 px beyond a 320 px viewport. Reduced the small-screen stage expansion to match its 16 px page gutters. The final browser check reports `innerWidth = 320`, `scrollWidth = 320`, and stage edges at 0 and 320.
-3. P2, initial scale and hierarchy: the first integration had a smaller machine and title than the selected concept. Increased the title scale and cropped the source image margins without stretching it. The final paired comparison shows the larger hero and the primary action in the lower part of the phone viewport.
+## Comparison History
 
-No actionable P0, P1, or P2 findings remain.
+1. Initial browser capture showed the cached previous renderer and styles. The local HTTP files were checked against the workspace. Explicit result-module and stylesheet versions resolved the stale resources. The final application and downloaded image use the new 900 × 1700 composition.
+2. The first new-layout comparison found P2 issues: a quote could split a spoken phrase after the comma, and the final stub disclaimer touched the paper edge. The quote layout now prefers the spoken pause before reducing font size, and stub metadata was moved inward. A regression test covers the phrase boundary; all 80 lines were checked using the real loaded font in the renderer fixture.
+3. The original Caishen render was smaller than the selected composition. Its proportional hero box was enlarged without changing the source aspect ratio. The final matching-content and full-view comparisons show the corrected mascot/quote/ticket hierarchy.
+4. Responsive verification first exposed that the browser's viewport override was affecting the separate fixture tab. That tab was closed, and every final viewport measurement was checked against `innerWidth` and `innerHeight` before accepting the captures.
 
-## Fidelity Surfaces
+## Required Fidelity Surfaces
 
-- Typography: bold Chinese heading, muted subtitle, tabular result numbers, and a clear primary action. System Chinese fonts are used. Their shape differs slightly from the generated type; this is P3 polish.
-- Layout: the selected hierarchy is preserved: header, machine, seven result slots, primary action, history, and footer. The live status line and progress label add useful draw feedback. At 390 × 844, the primary button is fully visible at y=689–753. At 320 × 568, the page scrolls vertically with no horizontal overflow.
-- Colors: cream page, butter-yellow machine, coral action and red balls, blue final ball. Speaker icons use the coral accent.
-- Images: generated machine, paddle, and ball sprites preserve the toy material and glass chambers. Raster assets are used for the illustration. Ball positions and counts are dynamic. The smaller chamber balls allow all 16 blue numbers to exist in the simulation.
-- Copy: the selected heading, subtitle, result label, history action, and simulation note are retained. After completion the button changes to “再摇一组”. Random results remain in draw order.
+- Typography: the large generic heading, filler slogan, and machine thumbnail are absent. An OFL Ma Shan Zheng subset gives the blessing its brush style; every current character line fits completely. Number labels remain bold and clear. Source font strokes are not reproduced pixel-for-pixel; the real font supports all changing quotes.
+- Spacing and hierarchy: large complete mascot above the blessing, then compact number ticket and lower perforated stub. Controls sit outside the exported image. Save is primary; Share is secondary. Select again is a compact corner control retained from the functional application.
+- Colors and materials: cream background, champagne-gold halo/coins, porcelain clouds, original glossy mascot and ball textures, warm-brown quote, coral primary action. The production paper and backdrop are generated raster assets, not CSS substitutes for the reference illustrations.
+- Image quality: the four existing mascots retain their original proportions. The neutral ingot is used for direct selection and legacy records, without inventing a historical mascot. Source PNGs, delivery WebP files, prompts, and licenses are retained under `assets/`.
+- Copy and content: exactly six sorted red numbers and one blue number, actual selection time, record ID, preset name, and attributed stored blessing. The simulation/probability context remains inside the exported artifact. The algorithm and stored physical number order remain separate from the sorted slip display.
 
-## Behavior Checks
+## Interaction and Responsive Checks
 
-- Complete draw observed in the browser: six distinct red values in 1–33 and one blue value in 1–16.
-- First outlet transfer observed with 32 red balls remaining and zero revealed numbers. The button was disabled during the transfer.
-- Final state observed with 27 red balls, 15 blue balls, seven revealed numbers, and an enabled repeat button.
-- Mixing and travel screenshots show movement inside the chamber and through the front chute.
-- History opens and closes. Stored completed results remain after navigation and reload.
-- Sound toggle changes its pressed state from true to false and back to true.
-- The root game card opens the tool.
-- Browser console: no warning or error entries in the checked final page.
-- Twenty-five Node tests pass. They cover draw constraints, rejection sampling, malformed storage, paddle contacts, gravity, chamber gates, label-independent capture, tube acceleration, tray impacts, ordered release, delayed frames, complete draws with both normal and reduced motion, and preset validation and physical playback.
+- Real seven-ball selection completed and opened the new result dialog automatically after the final blue ball settled.
+- The completed slip matched its visible numbers and the final stored role dialogue.
+- History reopening retained the completed role and dialogue; Select again returned to the existing ceremony and selection flow.
+- Save image downloaded a real PNG; Pillow verified 900 × 1700 dimensions. The same blob is used for native file sharing.
+- Measured 320 × 568, 390 × 664, 430 × 932, and 1280 × 900. Dialog bounds and save/share buttons stayed inside the viewport, with no horizontal overflow. Targets were at least 44 px high.
+- Five renderer states were inspected: Caishen, future self, cat, koi, and direct selection.
+- Browser console errors and warnings: none in the final application and renderer fixture.
+- Automated tests: 50 passed, including all mascot quote bounds and spoken-pause wrapping.
 
-## Number Presets
+## Follow-up Polish and Boundaries
 
-- The requested selection row sits between the result balls and start action. This is an intentional addition to the selected visual. At 390 × 844 the start action remains visible.
-- Three editable examples cover red-only, blue-only, and combined presets. The default remains fully random. Users can save up to 20 named presets on this device.
-- Browser evidence: `qa/preset-editor.jpg`, `qa/preset-editor-320.jpg`, and `qa/preset-result.jpg`.
-- A real browser draw with required reds 03, 08, 33 and blue 16 produced reds 03, 31, 05, 33, 08, 30 and blue 16. All required values were included, and the remaining red values were filled randomly.
-- Selection and management controls were disabled during the draw and enabled on completion.
-- Browser checks confirmed creation, editing, restoration after reload, deletion, and changing the selected preset. A sixth selected red disabled a seventh choice. Choosing a new blue cleared the previous blue; choosing it again returned to random blue.
-- History retained the name “我的幸运号” with its completed result after reload.
-- Narrow-screen fix: the native dialog maximum width reduced the number target width below 44 px. An explicit 24 px viewport inset now gives 45 px targets at 320 × 568. The save footer is fully visible at y=467–540, and the page has no horizontal overflow.
-- The same 120 Hz solver is used for planning and playback. Integration tests verify exact preset results at 30, 60, and 120 render frames per second, including reduced motion. Numbers are assigned before playback and do not change during motion.
+- P3: the concept's gold underline flourish is not reproduced; the production composition keeps the large brush quote and original mascot artwork. Generated cloud/coin placement and paper trim vary slightly from the flattened concept.
+- Native iPhone share-sheet delivery remains a real-device test gap. This iteration verifies actual download and preserves the existing native-sharing implementation and fallbacks; it does not claim a share was sent to another app or person.
+- No deployment was requested or performed. Unrelated project work remains in the workspace.
 
-## Physical Motion Revision
+## Latest Number-Row Refinement
 
-- Actual browser canvas recording: `qa/machine-motion.webm`, converted to `qa/machine-motion.mp4` for playback. The complete recorded draw took about 23 seconds.
-- Contact sheet from the recording: `qa/motion-frames.jpg`, sampled every three seconds. It shows the paddle lifting local ball piles and balls falling between the paddle arms rather than forming a uniform orbit.
-- Updated phone screenshot: `qa/motion-mobile.jpg`. The cream machine design and mobile layout are retained.
-- Capture starts at the actual bottom ball position. The old remote-ball interpolation has been removed.
-- Outlet progress uses arc length and gravity projected onto the tube slope. Ball rotation follows its travel distance. The ball hits the receiving tray, rebounds, and settles before the result is revealed.
-- Random labels are assigned with secure rejection sampling. The motion solver never reads labels; a test verifies that changing the labels leaves physical capture unchanged.
-- Final main-page browser check: phase complete, 27 red balls, 15 blue balls, seven revealed results, two final tray contacts, no horizontal overflow at 390 × 844, and no console warnings or errors.
-- The capture helper completed successfully. Its browser log included one unattributed MutationObserver error; the application does not use MutationObserver, and the main application page reported none.
+The user requested more horizontal breathing room after visual selection. Ball diameter changed from 106 to 90 canvas units, with the row centered between x99 and x801 instead of x43 and x857. Number labels scale with the ball. The 390 × 844 app view and an actual saved 900 × 1700 PNG were inspected again; the same seven numbers remain clear and both sides have equal inset. Current evidence: `../design/lottery-ticket/mascot-focus/implementation-mobile.png`; focused downloaded-image crop: `/tmp/guardian-balls-spacing-detail.png`. This intentional spacing update supersedes the wider row in the original concept and older comparison images. Syntax and whitespace checks passed; browser errors/warnings: none.
 
-## Limits and Follow-up Polish
+## Roomier Lower Stub
 
-- Verification used the desktop in-app browser at mobile viewport sizes. No physical iOS or Android device test was performed.
-- Reduced motion, optional storage failure, and page visibility pause are implemented. Complete reduced-motion draws pass the physics integration test. Background/resume and physical-device behavior were not exercised on a physical device.
-- P3: generated artwork and system Chinese type are close to the chosen concept but are not pixel-identical.
+The user identified crowded timestamp/ID/preset and context text. The original generated paper with its higher perforation was reused, creating more stub height without changing the image size or increasing the ball row. Metadata now has two columns: time/ID at left and barcode/preset at right. Bottom simulation/probability context has separate left/right alignment with clear space above and below. The actual 390 × 844 browser view and saved 900 × 1700 PNG were inspected, and no browser errors were observed. Latest evidence: `../design/lottery-ticket/mascot-focus/implementation-mobile.png` and `/tmp/guardian-roomy-stub-detail.png`.
 
-## Implementation Checklist
+## Stub Alignment Refinement
 
-- [x] Restore the selected visual hierarchy and raster assets.
-- [x] Run the full random draw and ordered outlet animation.
-- [x] Check narrow-screen overflow and practical touch controls.
-- [x] Test history, sound state, and the collection entry point.
-- [x] Compare the final browser capture against the selected concept.
-- [x] Pass the logic tests and module syntax check.
+The user requested alignment against the perforation. Measured paper dash endpoints x63..836 map to approximately x78..822 after the existing x18 placement and 0.96 scale. Time, ID, and left context now share x78. Barcode, preset, and right context share the x822 right edge; the barcode denominator excludes its final blank gap so the last ink bar reaches that edge. The 390 × 844 browser view and actual PNG download were inspected, with no browser errors. Latest focused evidence: `/tmp/guardian-stub-aligned-detail.png`.

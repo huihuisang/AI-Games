@@ -31,7 +31,9 @@ export function restoreHistory(raw) {
     const entries = JSON.parse(raw);
     if (!Array.isArray(entries)) return [];
     return entries.filter(entry => validateDraw(entry) && Number.isFinite(entry.at) && Math.abs(entry.at) <= 8.64e15)
-      .slice(0, 20).map(({ red, blue, at, presetName }) => ({ red, blue, at,
-        ...(typeof presetName === 'string' && presetName.length <= 20 ? { presetName } : {}) }));
+      .slice(0, 20).map(({ red, blue, at, presetName, ritualId, line }) => ({ red, blue, at,
+        ...(typeof presetName === 'string' && presetName.length <= 20 ? { presetName } : {}),
+        ...(typeof ritualId === 'string' && ritualId.length <= 24 ? { ritualId } : {}),
+        ...(typeof line === 'string' && line.length <= 80 ? { line } : {}) }));
   } catch { return []; }
 }

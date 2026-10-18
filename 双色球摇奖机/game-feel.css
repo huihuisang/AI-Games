@@ -1,0 +1,52 @@
+:root { --ease-out: cubic-bezier(0.23, 1, 0.32, 1); --ease-move: cubic-bezier(0.77, 0, 0.175, 1); }
+button { transition: transform 160ms var(--ease-out); }
+button:active:not(:disabled) { transform: translateY(2px) scale(.97); }
+.draw-button { position: relative; isolation: isolate; overflow: hidden; background: linear-gradient(#ff8588 0%, #ff666f 44%, #f95060 100%); border-bottom: 3px solid #d94a53; box-shadow: inset 0 2px 1px #ffd2c7, inset 0 -3px 5px #dc3b4333, 0 5px 0 #ce484f, 0 12px 22px #f56c5930; transition: transform 160ms var(--ease-out), background 200ms ease; }
+.draw-button::after { content: ''; position: absolute; pointer-events: none; inset: -60% auto -60% -36%; width: 20%; background: linear-gradient(90deg, transparent, #ffffff65, transparent); transform: rotate(25deg); opacity: 0; }
+.draw-button:active:not(:disabled) { transform: translateY(4px) scale(.98); }
+.draw-button:disabled { background: linear-gradient(#f4a692, #e18b76); border-bottom-color: #c57a65; box-shadow: inset 0 2px 0 #ffd6b8, 0 4px 0 #b9705b; }
+.is-selecting .draw-button::after { animation: button-scan 1800ms linear infinite; }
+@keyframes button-scan { 0% { transform: translateX(0) rotate(25deg); opacity: 0; } 15%, 75% { opacity: .65; } 100% { transform: translateX(800%) rotate(25deg); opacity: 0; } }
+.preset-trigger { box-shadow: inset 0 2px 0 #fff9e8, 0 3px 0 #e4cda3; border-bottom-color: #dfc393; background: linear-gradient(#fff6e0, #fcecc8); }
+.preset-chevron { transition: transform 200ms var(--ease-out); }
+.preset-trigger[aria-expanded="true"] .preset-chevron { transform: rotate(90deg); }
+.ritual-option { box-shadow: inset 0 2px 0 #fff, 0 3px 0 #e5d4b7; }
+.ritual-option[aria-pressed="true"] { box-shadow: inset 0 2px 0 #fff, 0 4px 0 #cfab68, 0 8px 18px #a4773020; }
+.machine-stage { isolation: isolate; }
+.machine-decor { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.machine-decor::before { content: ''; position: absolute; width: 85%; height: 75%; left: 7.5%; top: 15%; border-radius: 50%; background: radial-gradient(ellipse, #f6d78838, #ffefcb00 70%); opacity: .35; transition: opacity 250ms ease; }
+.machine-decor i { font-style: normal; position: absolute; color: #dcb46c; opacity: .5; font-size: 21px; }
+.machine-decor i:nth-child(1) { left: 8%; top: 36%; }
+.machine-decor i:nth-child(2) { right: 5%; top: 44%; font-size: 28px; }
+.machine-decor i:nth-child(3) { left: 15%; bottom: 15%; font-size: 12px; }
+.machine-decor i:nth-child(4) { right: 14%; bottom: 8%; font-size: 14px; }
+.is-selecting .machine-decor::before { opacity: 1; }
+.result-ball.is-new { animation: ball-land 280ms var(--ease-out) both; }
+@keyframes ball-land { 0% { opacity: .2; transform: translateY(-10px) scale(.94); } 60% { opacity: 1; transform: translateY(2px) scale(1.1, .94); } 100% { opacity: 1; transform: none; } }
+dialog[open]:not(#ritual-stage) { animation: panel-pop 280ms var(--ease-out) both; }
+@keyframes panel-pop { 0% { opacity: 0; transform: translateY(18px) scale(.95); } 70% { opacity: 1; transform: translateY(-2px) scale(1.012); } 100% { opacity: 1; transform: none; } }
+dialog[open]::backdrop { animation: backdrop-in 200ms ease both; }
+@keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+#ticket-dialog[open] { animation-duration: 280ms; }
+@media (hover: hover) and (pointer: fine) {
+  .draw-button:hover:not(:disabled) { transform: translateY(-2px); }
+  .preset-trigger:hover:not(:disabled), .ritual-option:hover, .ticket-actions button:hover:not(:disabled) { transform: translateY(-2px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  button, .draw-button, .preset-chevron { transition: opacity 120ms ease, background 120ms ease; }
+  button:active:not(:disabled), .draw-button:active:not(:disabled), .draw-button:hover:not(:disabled), .preset-trigger:hover:not(:disabled), .ritual-option:hover, .ticket-actions button:hover:not(:disabled) { transform: none; }
+  dialog[open]:not(#ritual-stage) { animation: backdrop-in 150ms ease both !important; }
+  .result-ball.is-new { animation: backdrop-in 150ms ease both !important; }
+  .is-selecting .draw-button::after { animation: none; }
+}
+.history-board { border: 2px solid #e2c894; box-shadow: inset 0 2px 0 #fff, 0 6px 0 #e6d3af, 0 14px 28px #a77c2c0d; }
+.history-board-heading { border-bottom: 1px solid #edddbd; }
+/* Retain the native dialog in the top layer while its closing transition runs. */
+@supports (transition-behavior: allow-discrete) {
+  dialog:not(#ritual-stage) { opacity: 0; transform: translateY(12px) scale(.97); transition: opacity 180ms ease, transform 180ms var(--ease-out), display 180ms allow-discrete, overlay 180ms allow-discrete; }
+  dialog[open]:not(#ritual-stage) { opacity: 1; transform: none; }
+  dialog:not(#ritual-stage)::backdrop { opacity: 0; transition: opacity 180ms ease, display 180ms allow-discrete, overlay 180ms allow-discrete; }
+  dialog[open]:not(#ritual-stage)::backdrop { opacity: 1; }
+  @starting-style { dialog[open]:not(#ritual-stage), dialog[open]:not(#ritual-stage)::backdrop { opacity: 0; } }
+}
+@media (prefers-reduced-motion: reduce) { dialog:not(#ritual-stage) { transform: none; } }

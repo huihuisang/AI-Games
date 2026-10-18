@@ -26,6 +26,8 @@ Open `http://127.0.0.1:4173/双色球摇奖机/` in a browser.
 - Block a second selection until all seven balls arrive.
 - Pause the animation when the page is hidden. Resume without skipping balls.
 - Use a recorded motor loop and hard-object collision samples. Contact strength drives ball impacts, motor speed drives the low mechanical layer, and actual gate, tube, and tray events drive release sounds. Mute and page hiding stop transient voices; failed audio loading does not block a selection.
+- Show a selection slip after the seventh ball settles. Export one shared 900 × 1700 PNG for preview, download, and native file sharing. Keep the actual numbers, time, preset name, mascot, and completed line together. Red numbers on the slip are sorted without changing physical or history order.
+- Reopen slips from the current result or any of the last 20 history records. Old records remain readable without inventing a previous mascot. Native file sharing uses a user gesture; unsupported browsers download the image instead. Cancellation does not start a download. The visible image also supports the browser’s long-press image menu.
 - Keep up to 20 completed selections in local storage. Storage and audio are optional.
 - Fit the main mobile controls in one small viewport height. Shrink the machine to the available space without stretching it, hide the extra title caption, and keep history and the return link in one footer row. Preset and history dialogs can scroll on their own. Very short viewports and enlarged text can still scroll instead of clipping controls.
 - Put the generated sound switch in the upper-left margin and the selected mascot in the upper-right open area. Use the full stage width for their horizontal positions and the fitted artwork height for vertical placement. Keep a 12 px outer inset and at least 14 px below the heading for the sound control. The mascot opens the existing ceremony picker; direct selection uses a neutral emblem. Keep the preset row full width below the results.
@@ -49,6 +51,9 @@ Open `http://127.0.0.1:4173/双色球摇奖机/` in a browser.
 - `machine-audio.mjs`: local sample loading, motor loop, contact and outlet sounds, gain control, and bounded transient voices.
 - `app.mjs`: canvas rendering, controls, audio integration, and history.
 - `style.css`: responsive page and dialog styles.
+- `ticket.mjs`: immutable selection-slip snapshot and one Canvas renderer for preview and PNG export.
+- `ticket-ui.mjs` and `ticket.css`: native result dialog, history reopening, download, and file-share fallbacks.
+- `game-motion.mjs` and `game-feel.css`: bounded completion particles, machine recoil, embossed controls, panel overshoot, and reduced-motion variants.
 
 ## Check
 
@@ -84,4 +89,10 @@ Open `qa/motion-capture.html` on the same local server. Its Record selection but
 
 The wealth god boasts about guarding wealth, the future self brings lucky hints from tomorrow, the proud lucky cat casts paw spells, and the koi lends its luck aura. Their exaggerated blessings are fictional role dialogue. The ceremony and page footer state that these lines do not change actual probabilities. Each character has exactly 20 lines. A ceremony and its completed selection each use one line. The line deck is shuffled per character, exhausted before reuse, and never repeats at a cycle boundary. Progress survives a reload when local storage is available. Corrupt or unavailable storage does not stop number selection. Dialogue state is independent of number sampling and saved number presets.
 
-Visible Chinese copy describes number selection throughout the page, history, accessible labels, and the home card. Existing route and storage keys remain compatible. The share-image concept under `../design/lottery-ticket/` is still a design preview; export and sharing are not implemented.
+Visible Chinese copy describes number selection throughout the page, history, accessible labels, and the home card. Existing route and storage keys remain compatible. The selected visual target is `../design/lottery-ticket/mascot-focus/01-guardian-slip.png`. The result now puts the full mascot and its brush-lettered blessing above a compact paper ticket and detachable stub. It removes the generic headline and machine thumbnail. Production background and blank paper assets are in `assets/ticket/`; the subset brush font and license are in `assets/fonts/`. The original design images are historical concepts. Live selection slips, PNG export, and native file sharing are now implemented with the original machine and mascot assets. Slips are simulation souvenirs, not valid lottery tickets.
+
+## Game Motion
+
+Press feedback uses 160 ms transform transitions. Panels enter in 280 ms with a small overshoot, ball labels land in 280 ms, and the machine recoils by only 2 px after a transfer. Completion releases 24 local decoration particles for 950 ms, with no persistent animation loop. The motor button has a transform-based light sweep only during selection. Motion uses native CSS and WAAPI; no runtime library was added. Reduced motion removes recoil and particles and uses short panel fades. Visibility changes pause active WAAPI effects. Dialog closure cancels them.
+
+The same renderer handles all four original mascots. Direct selection and old records without a mascot use a neutral gold-ingot artwork. Every quote preserves its complete text and prefers its spoken pause when wrapping; the actual-font QA fixture checks all 80 lines. Font loading has a bounded wait and a system-font fallback. Missing required artwork offers an image-generation retry without blocking the completed selection. The panel has a primary Save image button, secondary Share action, and a compact Select again control. Browser cache version parameters keep the result module and styles in step.

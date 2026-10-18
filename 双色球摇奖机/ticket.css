@@ -1,0 +1,29 @@
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.result-tools { display: flex; align-items: center; gap: 9px; }
+#view-ticket { border: 0; background: #f8e7bd; color: #946128; border-radius: 9px; min-height: 32px; padding: 4px 8px; font-size: 11px; font-weight: 700; }
+.history-item { position: relative; }
+.history-ticket { min-height: 32px; border: 0; background: #f8edd6; color: #926a38; border-radius: 9px; padding: 4px 10px; margin-top: 8px; font-size: 11px; }
+#ticket-dialog { overflow: hidden; padding: 0 12px max(10px, env(safe-area-inset-bottom)); width: min(460px, 100%); height: min(980px, 100dvh); max-width: 100%; max-height: 100dvh; border: 0; border-radius: 24px; background: #fff8eb; box-shadow: 0 28px 90px #43291f40; }
+#ticket-dialog[open] { display: flex; flex-direction: column; gap: 6px; }
+#ticket-dialog::backdrop { background: #392315a8; backdrop-filter: blur(6px); }
+#close-ticket { position: absolute; z-index: 3; top: max(12px, env(safe-area-inset-top)); right: 14px; width: 44px; height: 44px; padding: 10px; border: 1px solid #e8cca1; border-radius: 50%; background: #fff6e4e6; box-shadow: 0 3px 5px #be8c4120; display: grid; place-items: center; }
+.ticket-display { display: grid; place-items: center; flex: 1; min-height: 0; margin: 0 -12px; position: relative; isolation: isolate; }
+#ticket-image { width: 100%; height: 100%; min-height: 0; object-fit: contain; -webkit-touch-callout: default; user-select: auto; }
+#ticket-loading { text-align: center; color: #9b723d; font-size: 13px; }
+#ticket-loading span { display: none; }
+#ticket-status { order: 3; flex: 0 0 auto; text-align: center; font-size: 10px; color: #a38a66; min-height: 15px; line-height: 1.5; }
+.ticket-actions { display: grid; grid-template-columns: 1.1fr 1fr; gap: 10px; position: relative; z-index: 2; padding: 0 4px 4px; }
+.ticket-actions button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 54px; border-radius: 30px; font-size: 17px; font-weight: 800; border: 1px solid #e4be7c; color: #714021; background: #fff6e4; box-shadow: inset 0 2px 1px #fff, 0 3px 0 #dfbd86, 0 6px 12px #ad7d3720; }
+#save-ticket { background: #ff6a71; border-color: #ff9b94; color: #fff; box-shadow: inset 0 2px 2px #ffb8a9, inset 0 -3px 5px #d9484920, 0 4px 0 #df5559, 0 9px 20px #e4614140; }
+#save-ticket img { filter: brightness(0) invert(1); }
+.ticket-actions button:disabled { opacity: .5; }
+#ticket-again { position: absolute; z-index: 3; top: max(12px, env(safe-area-inset-top)); left: 14px; min-height: 44px; padding: 6px 10px; background: #fff8ebd9; border: 1px solid #ead8b5; border-radius: 24px; color: #9b7446; font-size: 11px; }
+#ticket-again span { margin-left: 3px; }
+#ticket-again:disabled { opacity: .5; }
+#retry-ticket { background: #fff5dc; border: 1px solid #d9bf91; min-height: 36px; border-radius: 10px; color: #886137; }
+.result-burst { position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: inherit; }
+.result-burst i { position: absolute; left: 50%; top: 45%; width: 7px; height: 12px; border-radius: 2px; background: #eaba54; opacity: 0; }
+.result-burst i:nth-child(3n) { background: #ff7777; }
+.result-burst i:nth-child(3n + 1) { background: #fff9e7; width: 8px; height: 8px; border-radius: 50%; }
+@media (max-width: 600px) { #ticket-dialog { border-radius: 0; } }
+@media (max-height: 650px) { .ticket-actions button { min-height: 46px; font-size: 15px; } }

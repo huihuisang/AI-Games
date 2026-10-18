@@ -9,6 +9,8 @@
     <link rel="icon" href="assets/red-ball.webp" />
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="ritual.css" />
+    <link rel="stylesheet" href="game-feel.css" />
+    <link rel="stylesheet" href="ticket.css?v=guardian-6" />
     <link rel="preload" as="image" href="assets/controls/sound-on.webp" />
   </head>
   <body>
@@ -22,6 +24,7 @@
       </header>
 
       <section class="machine-stage" aria-label="红蓝双球舱选号机">
+        <div class="machine-decor" aria-hidden="true"><i>✦</i><i>✧</i><i>✦</i><i>✧</i></div>
         <canvas id="machine" width="1285" height="1224" role="img" aria-label="透明球舱里的红球和蓝球，准备开始选号"></canvas>
         <div class="machine-accessories" id="machine-accessories">
           <button class="sound-toggle" id="sound-toggle" type="button" aria-label="开启音效" aria-pressed="false" title="开启音效">
@@ -39,7 +42,7 @@
       <section class="results" aria-labelledby="result-title">
         <div class="result-heading">
           <h2 id="result-title">本次选号</h2>
-          <span id="draw-progress">6 红 + 1 蓝</span>
+          <div class="result-tools"><button id="view-ticket" type="button" hidden>查看选号单 ↗</button><span id="draw-progress">6 红 + 1 蓝</span></div>
         </div>
         <ol class="result-balls" id="result-balls" aria-label="模拟号码，按出球顺序">
           <li class="result-ball is-empty" data-color="red"><span>?</span></li>
@@ -109,6 +112,20 @@
       <p id="history-empty">还没有选号记录，去选一组吧。</p>
       <ol id="history-list"></ol>
     </dialog>
+    <dialog id="ticket-dialog" aria-labelledby="ticket-title" aria-describedby="ticket-summary">
+      <h2 id="ticket-title" class="sr-only">我的选号单</h2>
+      <button id="close-ticket" type="button" aria-label="关闭选号单" autofocus><img src="assets/x-bold.svg" alt="" width="22" height="22" /></button>
+      <p id="ticket-summary" class="sr-only"></p>
+      <div class="ticket-display">
+        <div id="ticket-loading"><span>✦</span><p>正在装好你的好运</p></div>
+        <img id="ticket-image" alt="" hidden />
+      </div>
+      <p id="ticket-status" role="status" aria-live="polite"></p>
+      <button id="retry-ticket" type="button" hidden>重新生成选号单</button>
+      <div class="ticket-actions"><button id="save-ticket" type="button" disabled><img src="assets/download-simple-bold.svg" alt="" width="23" height="23" />保存图片</button><button id="share-ticket" type="button" disabled><img src="assets/share-network-bold.svg" alt="" width="23" height="23" />分享好运</button></div>
+      <button id="ticket-again" type="button">再选一组 <span aria-hidden="true">›</span></button>
+      <div class="result-burst" aria-hidden="true"></div>
+    </dialog>
     <dialog id="preset-picker" aria-labelledby="preset-picker-title">
       <div class="dialog-heading"><h2 id="preset-picker-title">选号预设</h2><button id="close-preset-picker" type="button">关闭</button></div>
       <div class="preset-toolbar">
@@ -146,6 +163,6 @@
       </form>
     </dialog>
     <noscript><p class="noscript">请开启 JavaScript 来启动选号机。</p></noscript>
-    <script type="module" src="app.mjs"></script>
+    <script type="module" src="app.mjs?v=guardian-6"></script>
   </body>
 </html>

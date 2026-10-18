@@ -1,6 +1,6 @@
 # Number Selection Slip Concept
 
-Status: design preview only. The generated image uses sample numbers and metadata. The app now has character dialogue after number selection. Dynamic slip rendering, image export, and sharing are still not implemented.
+Status: the raster below is the original design concept with sample numbers and metadata. The application now renders a live slip after number selection, exports a 900 × 1700 PNG, and uses native file sharing when supported. The live renderer follows selected concept 1 in `mascot-focus/`, with the original balls and selected mascot; it does not replace text inside this sample raster. Its quote comes from the current character blessing pool, so the old daily-life sample quote below is superseded.
 
 ## Files and Direction
 
@@ -10,11 +10,11 @@ Status: design preview only. The generated image uses sample numbers and metadat
 - Use cream paper, champagne-gold details, subtle cloud patterns, perforation, and the existing 3D machine and selected mascot.
 - Sample selection: red 07, 08, 21, 26, 29, 30; blue 15. All dates, identifiers, and the decorative barcode are sample design content.
 
-## Proposed Completion Flow
+## Implemented Completion Flow
 
 1. Wait until the last blue ball settles and number selection is complete.
 2. Show the selection slip with the actual numbers, selection time, chosen companion, and a line from that character’s 20-line pool.
-3. Offer Save image, Share, and Select another set outside the exported image.
+3. Offer Save image, Share, and Select another set outside the exported image. Unsupported file sharing falls back to image download; cancellation does not download anything.
 4. Keep the simulation label visible in the exported slip. Use original app assets and live text when implementing the design; the sample raster is not a template for replacing digits.
 
 ## Latest Image Edit Prompt

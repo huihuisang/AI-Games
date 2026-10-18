@@ -6,6 +6,8 @@ import { createPresetUI } from './preset-ui.mjs';
 import { MachineAudio } from './machine-audio.mjs';
 import { createRitualUI } from './ritual-ui.mjs';
 import { createMascotVoice } from './mascot-lines.mjs';
+import { createTicketUI } from './ticket-ui.mjs?v=guardian-6';
+import { createGameMotion } from './game-motion.mjs';
 
 const canvas = document.querySelector('#machine');
 const context = canvas.getContext('2d');
@@ -25,6 +27,8 @@ const readStorage = key => { try { return localStorage.getItem(key); } catch { r
 const writeStorage = (key, value) => { try { localStorage.setItem(key, value); } catch { /* Storage is optional. */ } };
 const presetUI = createPresetUI({ readStorage, writeStorage });
 const mascotVoice = createMascotVoice({ readStorage, writeStorage });
+const ticketUI = createTicketUI({ onAgain: () => drawButton.click(), canSelect: () => !drawButton.disabled });
+const motion = createGameMotion();
 const ritualUI = createRitualUI({ readStorage, writeStorage,
   onChange: ritual => { buttonLabel.textContent = ritual.buttonLabel; } });
 let history = restoreHistory(readStorage(HISTORY_KEY));
@@ -144,9 +148,12 @@ function reveal(event) {
   slot.querySelector('span').textContent = formatNumber(event.number);
   slot.className = 'result-ball is-new';
   slot.setAttribute('aria-label', `${event.blue ? '蓝' : '红'}球 ${formatNumber(event.number)}`);
+  motion.reveal(slot);
   progressLabel.textContent = `${event.index + 1} / 7`;
   if (sequence.phase === 'complete') {
-    const draw = { ...sequence.draw, at: Date.now(), ...(activePresetName ? { presetName: activePresetName } : {}) };
+    const line = mascotVoice.next(activeRitual?.id);
+    const draw = { ...sequence.draw, at: Date.now(), ritualId: activeRitual?.id ?? 'direct',
+      ...(line ? { line } : {}), ...(activePresetName ? { presetName: activePresetName } : {}) };
     history = [draw, ...history].slice(0, 20);
     writeStorage(HISTORY_KEY, JSON.stringify(history));
     renderHistory();
@@ -156,11 +163,12 @@ function reveal(event) {
     ritualUI.setLocked(false);
     buttonLabel.textContent = ritualUI.getSelected().buttonLabel;
     progressLabel.textContent = '号码已选齐';
-    const line = mascotVoice.next(activeRitual?.id);
     status.classList.toggle('is-mascot-line', Boolean(line));
     status.textContent = line ? `${activeRitual.name}：${line}` : '这组号码选好了，想换一组也可以';
     canvas.setAttribute('aria-label', `选号完成，红球 ${draw.red.map(formatNumber).join('、')}，蓝球 ${formatNumber(draw.blue)}`);
     audio.mix(false);
+    motion.complete();
+    ticketUI.show(draw);
     settleRemaining = 3;
   } else {
     slots[event.index + 1].classList.add('is-next');
@@ -266,6 +274,7 @@ drawButton.addEventListener('click', async () => {
   }
   preparing = false;
   sequence.start();
+  motion.start();
   slots.forEach((slot, index) => {
     slot.className = `result-ball is-empty${index === 0 ? ' is-next' : ''}`;
     slot.querySelector('span').textContent = '?';
@@ -320,9 +329,15 @@ function renderHistory() {
       ball.setAttribute('aria-label', `${index === 6 ? '蓝' : '红'}球 ${formatNumber(number)}`);
       balls.append(ball);
     });
-    item.append(time, label, balls);
+    const view = document.createElement('button');
+    view.type = 'button'; view.className = 'history-ticket'; view.textContent = '选号单 ↗';
+    view.setAttribute('aria-label', `查看 ${time.textContent} 的选号单`);
+    view.addEventListener('click', () => { historyDialog.close(); ticketUI.show(entry); });
+    item.append(time, label, balls, view);
     list.append(item);
-    board.append(item.cloneNode(true));
+    const boardItem = item.cloneNode(true);
+    boardItem.querySelector('.history-ticket').addEventListener('click', () => ticketUI.show(entry));
+    board.append(boardItem);
   }
 }
 renderHistory();
@@ -359,6 +374,7 @@ async function initialize() {
       loadImage('assets/paddle-small.webp'),
     ]);
     sprites = { machine, red, blue, paddle };
+    ticketUI.prepare();
     resetChambers();
     ready = true;
     document.querySelector('#load-message').hidden = true;
