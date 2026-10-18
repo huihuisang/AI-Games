@@ -1,0 +1,50 @@
+[
+  {
+    "file": "design/lottery-ticket/video-trials/caishen-q4-clean-preview.mp4",
+    "bytes": 3846624,
+    "sha256": "d19db72f200a2cb9203ff608b773808e724e85f9a5777f5b73f76c4728208ba5",
+    "duration": "5.041667",
+    "streams": [
+      {
+        "type": "video",
+        "codec": "h264",
+        "width": 1080,
+        "height": 1080
+      },
+      {
+        "type": "audio",
+        "codec": "aac",
+        "width": null,
+        "height": null
+      }
+    ]
+  },
+  {
+    "file": "design/lottery-ticket/video-trials/future-q2-clean-preview.mp4",
+    "bytes": 3577595,
+    "sha256": "47d56ef542712502f15463c888b4a14168d043edd2c3931e036773efab1cc5af",
+    "duration": "5.083333",
+    "streams": [
+      {
+        "type": "video",
+        "codec": "h264",
+        "width": 1080,
+        "height": 1080
+      }
+    ]
+  },
+  {
+    "file": "design/lottery-ticket/video-trials/koi-q2-clean-preview.mp4",
+    "bytes": 3635687,
+    "sha256": "c6717f5d38447af4637abaf47e5f14b44af128134af59bf6daf2c78ddd51f9b8",
+    "duration": "5.083333",
+    "streams": [
+      {
+        "type": "video",
+        "codec": "h264",
+        "width": 1080,
+        "height": 1080
+      }
+    ]
+  }
+]

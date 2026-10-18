@@ -4,7 +4,7 @@ import { createMachine, stepMachine, FIXED_STEP } from './simulation.mjs';
 import { createPresetPools } from './presets.mjs';
 import { createPresetUI } from './preset-ui.mjs';
 import { MachineAudio } from './machine-audio.mjs';
-import { createRitualUI } from './ritual-ui.mjs?v=cat-video-1';
+import { createRitualUI } from './ritual-ui.mjs?v=all-spells-1';
 import { createMascotVoice } from './mascot-lines.mjs';
 import { createTicketUI } from './ticket-ui.mjs?v=front-2';
 import { createGameMotion } from './game-motion.mjs?v=reward-3';

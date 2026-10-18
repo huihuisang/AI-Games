@@ -1,0 +1,12 @@
+{
+  "service": "Vidu web",
+  "model": "Vidu Q4 Preview",
+  "source": "双色球摇奖机/assets/mascots/caishen-front.png",
+  "duration": 5,
+  "resolution": "1080p",
+  "encoding": "H265",
+  "amount": 1,
+  "cost": 0,
+  "payment": "free trial",
+  "prompt": "A premium 3D mobile game spell cinematic using this exact Chinese God of Wealth figurine. Preserve his smiling elderly face, white beard, black and gold hat, red embroidered robe, gold ingot, glossy ivory porcelain and polished gold material. Face and body stay directly toward the viewer. One continuous five-second shot, gentle push-in, no orbit or cuts. 0-1.5 seconds: he lifts the gold ingot with both hands; intense golden light gathers and floating gold coins spiral around him. 1.5-3.5 seconds: he thrusts the ingot forward and a huge translucent golden square seal with abstract geometric patterns slams into the foreground, sending a sharp circular golden shockwave and sparks toward the lens with a single strong camera impact. 3.5-5 seconds: the seal dissolves into six red glowing energy orbs and one blue orb streaming downward out of frame; he settles into his confident front-facing pose. Dark warm charcoal background, soft gold spotlight, rich detailed CG, strong anticipation, explosive impact, smooth recovery. Keep the complete character visible and recognizable. Effects do not obscure his face. No letters, readable symbols, text, numbers, subtitles, extra limbs, extra characters, dialogue or transformation."
+}

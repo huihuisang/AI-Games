@@ -1,4 +1,4 @@
-import { RITUALS, restoreRitual } from './rituals.mjs?v=cat-video-1';
+import { RITUALS, restoreRitual } from './rituals.mjs?v=all-spells-1';
 
 import { playRitualVideo } from './ritual-video.mjs';
 
@@ -130,7 +130,7 @@ export function createRitualUI({ readStorage, writeStorage, onChange }) {
 
   function playVideoScene(ritual, line, soundEnabled) {
     configureScene(ritual, line);
-    document.querySelector('#ritual-stage-label').textContent = '招财爪 · 好运加持中';
+    document.querySelector('#ritual-stage-label').textContent = `${ritual.seal} · 好运加持中`;
     stage.classList.add('is-video');
     video.hidden = false;
     if (!stage.open) stage.showModal();

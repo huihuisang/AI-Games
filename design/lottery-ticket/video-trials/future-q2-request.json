@@ -1,0 +1,13 @@
+{
+  "service": "Vidu web",
+  "model": "Vidu Q2",
+  "mode": "Flash",
+  "source": "双色球摇奖机/assets/mascots/future-front.png",
+  "duration": 5,
+  "resolution": "1080p",
+  "encoding": "H265",
+  "amount": 1,
+  "credits": 10,
+  "payment": "gifted free credits",
+  "prompt": "A premium 3D mobile game time-magic cinematic using this exact friendly future-self astronaut figurine. Preserve the same face, hair, ivory and champagne-gold space suit, clear round helmet, body proportions and small envelope prop. Keep the face and body directly toward the viewer throughout. One continuous five-second shot with a gentle camera push, no cuts or orbit. 0-1.5 seconds: the astronaut raises one gloved hand and freezes floating gold particles in mid-air; luminous blue and gold concentric clock rings ignite behind the character without any digits or writing. 1.5-3.5 seconds: the astronaut pulls open a vivid blue-gold vertical time rift and extracts a brilliant glowing energy core, then sends the core forward with one decisive palm thrust; a crisp expanding energy ring and a short camera impact make the spell feel powerful. 3.5-5 seconds: the core separates into six red energy orbs and one blue orb streaming downward out of frame, the frozen particles resume drifting and the astronaut returns to the original friendly front-facing stance. Dark warm charcoal background, polished ivory and gold materials, refined cinematic lighting. Clear anticipation, explosive release, smooth recovery. Keep the whole character recognizable and the face clear. No extra characters, extra arms, deformation, dialogue, text, subtitles or numbers."
+}

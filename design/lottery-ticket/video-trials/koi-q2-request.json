@@ -1,0 +1,13 @@
+{
+  "service": "Vidu web",
+  "model": "Vidu Q2",
+  "mode": "Flash",
+  "source": "双色球摇奖机/assets/mascots/koi.png",
+  "duration": 5,
+  "resolution": "1080p",
+  "encoding": "H265",
+  "amount": 1,
+  "credits": 10,
+  "payment": "gifted free credits",
+  "prompt": "A premium 3D mobile game lucky koi spell cinematic using this exact beautiful koi figurine. Preserve the ivory porcelain fish, vivid red markings, flowing translucent champagne-gold fins, facial features and graceful side-facing silhouette. Do not turn the fish to face front. One continuous five-second shot with a gentle camera push, no cuts. 0-1.5 seconds: the koi swishes its long tail and gathers a whirlpool of liquid golden light beneath it, sparkling golden droplets spiral inward. 1.5-3.5 seconds: the koi makes one powerful graceful upward leap through a huge glowing gold dragon-gate arch behind it. A majestic translucent golden dragon-shaped energy silhouette briefly coils behind the fish, then a brilliant circular gold shockwave bursts toward the camera with a short impact. The fish itself remains the same koi, never transforms into a dragon. 3.5-5 seconds: the golden energy releases six red light orbs and one blue orb that flow downward out of frame, the koi curves gently back into its original elegant side pose. Dark warm charcoal background, rich glossy porcelain, beautiful gold caustics and cinematic game CG. Strong anticipation, fast magical burst, smooth recovery. Keep the entire fish and long fins recognizable, effects never hide the fish. No text, symbols, numbers, subtitles, dialogue, extra fish or extra fins."
+}
