@@ -8,7 +8,7 @@
     <title>双色球选号机</title>
     <link rel="icon" href="assets/red-ball.webp" />
     <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="ritual.css" />
+    <link rel="stylesheet" href="ritual.css?v=cat-video-1" />
     <link rel="stylesheet" href="game-feel.css?v=reward-3" />
     <link rel="stylesheet" href="ticket.css?v=reward-3" />
     <link rel="preload" as="image" href="assets/controls/sound-on.webp" />
@@ -31,7 +31,7 @@
             <img src="assets/controls/sound-off.webp" alt="" width="64" height="64" />
           </button>
           <button class="ritual-trigger" id="ritual-trigger" type="button" aria-haspopup="dialog" aria-controls="ritual-picker" aria-expanded="false">
-            <img id="current-ritual-art" src="assets/mascots/caishen-small.webp" alt="" width="120" height="120" />
+            <img id="current-ritual-art" src="assets/mascots/caishen-front-small.webp" alt="" width="120" height="120" />
             <span class="ritual-direct-symbol" aria-hidden="true">✦</span>
             <span class="mascot-label"><strong id="current-ritual">财神爷</strong><span aria-hidden="true">⌄</span></span>
           </button>
@@ -89,13 +89,14 @@
     </dialog>
     <dialog id="ritual-stage" aria-labelledby="ritual-title" aria-describedby="ritual-caption">
       <div class="ritual-card" id="ritual-card" data-ritual="caishen">
-        <div class="ritual-topline"><span>选 号 搭 子 来 串 门</span><button id="skip-ritual" type="button" autofocus>跳过仪式 ›</button></div>
+        <div class="ritual-topline"><span id="ritual-stage-label">选 号 搭 子 来 串 门</span><button id="skip-ritual" type="button" autofocus>跳过仪式 ›</button></div>
         <div class="ritual-scene" aria-hidden="true">
           <div class="ritual-orbit orbit-back"></div><div class="ritual-orbit orbit-front"></div>
           <div class="ritual-aura"></div>
           <span class="ritual-spark spark-one">✦</span><span class="ritual-spark spark-two">✧</span><span class="ritual-spark spark-three">✦</span>
           <span class="ritual-token token-one"></span><span class="ritual-token token-two"></span><span class="ritual-token token-three"></span>
           <div id="ritual-hero"></div>
+          <video id="ritual-video" playsinline preload="none" hidden></video>
           <div class="ritual-seal" id="ritual-seal">开门营业</div>
           <div class="ritual-floor"></div>
         </div>
@@ -171,6 +172,6 @@
       </form>
     </dialog>
     <noscript><p class="noscript">请开启 JavaScript 来启动选号机。</p></noscript>
-    <script type="module" src="app.mjs?v=reward-3"></script>
+    <script type="module" src="app.mjs?v=cat-video-1"></script>
   </body>
 </html>

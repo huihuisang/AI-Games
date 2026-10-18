@@ -1,4 +1,4 @@
-import { createSelectionTicket, drawSelectionTicket, drawSelectionPaper, layoutTicketQuote, TICKET_SIZE, TICKET_PAPER } from './ticket.mjs?v=reward-3';
+import { createSelectionTicket, drawSelectionTicket, drawSelectionPaper, layoutTicketQuote, TICKET_SIZE, TICKET_PAPER } from './ticket.mjs?v=front-2';
 
 export function createTicketUI({ onAgain, canSelect = () => true }) {
   const dialog = document.querySelector('#ticket-dialog');

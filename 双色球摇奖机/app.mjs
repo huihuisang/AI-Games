@@ -4,9 +4,9 @@ import { createMachine, stepMachine, FIXED_STEP } from './simulation.mjs';
 import { createPresetPools } from './presets.mjs';
 import { createPresetUI } from './preset-ui.mjs';
 import { MachineAudio } from './machine-audio.mjs';
-import { createRitualUI } from './ritual-ui.mjs';
+import { createRitualUI } from './ritual-ui.mjs?v=cat-video-1';
 import { createMascotVoice } from './mascot-lines.mjs';
-import { createTicketUI } from './ticket-ui.mjs?v=reward-3';
+import { createTicketUI } from './ticket-ui.mjs?v=front-2';
 import { createGameMotion } from './game-motion.mjs?v=reward-3';
 
 const canvas = document.querySelector('#machine');
@@ -250,7 +250,7 @@ drawButton.addEventListener('click', async () => {
   status.classList.remove('is-mascot-line');
   status.textContent = '正在准备本次选号…';
   try {
-    const ceremony = ritualUI.play({ reducedMotion: motionMode, line: mascotVoice.next(ritual.id) });
+    const ceremony = ritualUI.play({ reducedMotion: motionMode, line: mascotVoice.next(ritual.id), soundEnabled });
     let planReady = Promise.resolve(null);
     if (preset) {
       buttonLabel.textContent = '准备中…';

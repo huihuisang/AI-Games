@@ -1,5 +1,5 @@
 import { validateDraw } from './draw.mjs';
-import { RITUALS } from './rituals.mjs';
+import { RITUALS } from './rituals.mjs?v=front-2';
 
 export const TICKET_SIZE = Object.freeze({ width: 900, height: 1700 });
 export const TICKET_PAPER = Object.freeze({ x: 18, y: 1260, width: 864, height: 422.4 });

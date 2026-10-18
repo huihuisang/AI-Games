@@ -1,15 +1,23 @@
 # Ceremony Mascots
 
-Generated with the built-in `imagegen` tool. The existing `../machine.webp` is the material and lighting reference. All four PNG sources have genuine RGBA transparency and are 1254 × 1254 px. The original outputs were copied without edits. WebP delivery copies preserve alpha and only change dimensions and encoding: 640 px for the ceremony and 256 px for selection thumbnails, quality 90.
+Generated with the built-in `imagegen` tool. The existing `../machine.webp` is the material and lighting reference. Both generations use genuine RGBA transparency and 1254 × 1254 px PNG sources. The original outputs were copied without edits. WebP delivery copies preserve alpha and only change dimensions and encoding: 640 px for the ceremony and 256 px for selection thumbnails, quality 90.
 
 | Character | PNG source | Ceremony | Thumbnail |
 | --- | --- | --- | --- |
-| Wealth god | `caishen.png` | `caishen.webp` | `caishen-small.webp` |
-| Future self | `future.png` | `future.webp` | `future-small.webp` |
-| Lucky cat | `cat.png` | `cat.webp` | `cat-small.webp` |
+| Wealth god | `caishen-front.png` | `caishen-front.webp` | `caishen-front-small.webp` |
+| Future self | `future-front.png` | `future-front.webp` | `future-front-small.webp` |
+| Lucky cat | `cat-front.png` | `cat-front.webp` | `cat-front-small.webp` |
 | Koi | `koi.png` | `koi.webp` | `koi-small.webp` |
 
-## Wealth God Prompt
+## Front Views
+
+On 2026-10-18 the user requested direct front views of all four existing characters. The built-in imagegen tool edited each prior WebP as its identity reference. The new sources were copied without image edits; delivery copies only resize and encode. Both face and torso face the viewer. The koi presents both eyes and pectoral fins while its tail flows below. The original images remain unchanged as design history.
+
+The user then chose to keep the original side-view koi. Its front-view variant remains an unused design asset; only the other three front views are active.
+
+Exact edit prompts are in `front-prompts.json`. The app, ceremony, result overlay, and saved slips use the active delivery images listed above. Original prompts below describe the earlier side-view generation.
+
+## Original Wealth God Prompt
 
 Reference: the lottery machine. Transparent background enabled.
 

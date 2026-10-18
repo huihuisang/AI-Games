@@ -1,4 +1,6 @@
-import { RITUALS, restoreRitual } from './rituals.mjs';
+import { RITUALS, restoreRitual } from './rituals.mjs?v=cat-video-1';
+
+import { playRitualVideo } from './ritual-video.mjs';
 
 const STORAGE_KEY = 'double-color-machine.ritual.v1';
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
@@ -14,6 +16,7 @@ export function createRitualUI({ readStorage, writeStorage, onChange }) {
   const stage = document.querySelector('#ritual-stage');
   const card = document.querySelector('#ritual-card');
   const hero = document.querySelector('#ritual-hero');
+  const video = document.querySelector('#ritual-video');
   const options = document.querySelector('#ritual-options');
   const direct = document.querySelector('#ritual-direct');
   const artwork = new Map();
@@ -45,6 +48,15 @@ export function createRitualUI({ readStorage, writeStorage, onChange }) {
       button.setAttribute('aria-pressed', String(button.dataset.ritual === selected.id));
     });
     direct.setAttribute('aria-pressed', String(selected.id === 'direct'));
+    if (selected.video && video.getAttribute('src') !== selected.video) {
+      video.src = selected.video;
+      video.poster = selected.art;
+      video.preload = 'auto';
+      video.load();
+    } else if (!selected.video && video.hasAttribute('src')) {
+      video.removeAttribute('src');
+      video.load();
+    }
     onChange(selected);
   }
 
@@ -92,7 +104,7 @@ export function createRitualUI({ readStorage, writeStorage, onChange }) {
 
   document.querySelector('#skip-ritual').addEventListener('click', () => finishPlayback?.());
   stage.addEventListener('cancel', event => { event.preventDefault(); finishPlayback?.(); });
-  stage.addEventListener('close', () => finishPlayback?.());
+  stage.addEventListener('close', () => { if (!stage.open) finishPlayback?.(); });
   document.addEventListener('visibilitychange', () => {
     for (const animation of animations) {
       if (document.hidden) animation.pause();
@@ -107,20 +119,49 @@ export function createRitualUI({ readStorage, writeStorage, onChange }) {
     return animation;
   }
 
-  async function play({ reducedMotion = false, line = '' } = {}) {
-    if (!selected.art) return Promise.resolve();
-    finishPlayback?.();
-    const version = ++playbackVersion;
-    const ritual = selected;
-    const image = await loadArtwork(ritual);
-    if (version !== playbackVersion || !image) return;
-    hero.replaceChildren(image.cloneNode());
+  function configureScene(ritual, line) {
     card.dataset.ritual = ritual.id;
     for (const name of ['eyebrow', 'title', 'seal']) {
       document.querySelector(`#ritual-${name}`).textContent = ritual[name];
     }
     document.querySelector('#ritual-caption').textContent = line;
     card.querySelectorAll('.ritual-token').forEach(token => { token.textContent = ritual.token; });
+  }
+
+  function playVideoScene(ritual, line, soundEnabled) {
+    configureScene(ritual, line);
+    document.querySelector('#ritual-stage-label').textContent = '招财爪 · 好运加持中';
+    stage.classList.add('is-video');
+    video.hidden = false;
+    if (!stage.open) stage.showModal();
+    // Start before any await so a tap can authorize audible playback on mobile.
+    const playback = playRitualVideo(video, { muted: !soundEnabled });
+    const finish = () => playback.cancel();
+    finishPlayback = finish;
+    return playback.finished.then(result => {
+      if (finishPlayback !== finish) return result;
+      finishPlayback = null;
+      video.hidden = true;
+      stage.classList.remove('is-video');
+      stage.close();
+      return result;
+    });
+  }
+
+  async function play({ reducedMotion = false, line = '', soundEnabled = false } = {}) {
+    if (!selected.art) return Promise.resolve();
+    finishPlayback?.();
+    const version = ++playbackVersion;
+    const ritual = selected;
+    if (ritual.video && !reducedMotion) {
+      const result = await playVideoScene(ritual, line, soundEnabled);
+      if (version !== playbackVersion || result !== 'failed') return;
+    }
+    const image = await loadArtwork(ritual);
+    if (version !== playbackVersion || !image) return;
+    hero.replaceChildren(image.cloneNode());
+    configureScene(ritual, line);
+    document.querySelector('#ritual-stage-label').textContent = '选 号 搭 子 来 串 门';
     stage.showModal();
 
     return new Promise(resolve => {

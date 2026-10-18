@@ -15,7 +15,7 @@ Open `http://127.0.0.1:4173/双色球摇奖机/` in a browser.
 ## Behavior
 
 - Select six distinct red numbers from 1 to 33, then one blue number from 1 to 16.
-- Pick a short opening ceremony: the wealth god, a future self, a lucky cat, or a koi. The last choice is saved on this device. Each character has a generated transparent 3D collectible render and a 2.6-second scene before mixing starts. Skip or Escape starts the existing selection after preset preparation. Direct selection bypasses the ceremony. Reduced motion uses a short fade; page hiding pauses the scene. Ceremony selection does not read or change number sampling, physics, presets, or history.
+- Pick a short opening ceremony: the wealth god, a future self, a lucky cat, or a koi. The last choice is saved on this device. Each character has a generated transparent 3D collectible render. The cat plays its approved five-second H.264 spell video before mixing starts; the other characters retain the 2.6-second image scene. Video audio follows the page sound setting, with a muted retry for autoplay restrictions. Video failure falls back to the image scene. Skip or Escape starts the existing selection after preset preparation. Direct selection bypasses the ceremony. Reduced motion uses a short image fade; page hiding pauses the scene or video. Ceremony selection does not read or change number sampling, physics, presets, or history.
 - In fully random mode, use `crypto.getRandomValues` with rejection sampling to shuffle physical ball labels. Physics does not read labels, so every remaining number has the same chance of reaching the outlet.
 - Show the current preset in one row, with a small fixed-number badge when required numbers are active. Tap it to open the preset picker, inspect fixed numbers, or open the manager. Select a saved preset before a selection. Red presets accept 0–6 fixed numbers; blue presets accept one fixed number or remain random. Required numbers appear in the result, and all remaining positions are sampled without replacement.
 - Create, edit, and delete up to 20 named presets. Three editable examples are included. Presets and the last selection are saved on this device. Preset controls are locked during a selection.
@@ -51,6 +51,7 @@ Open `http://127.0.0.1:4173/双色球摇奖机/` in a browser.
 - `machine-audio.mjs`: local sample loading, motor loop, contact and outlet sounds, gain control, and bounded transient voices.
 - `app.mjs`: canvas rendering, controls, audio integration, and history.
 - `style.css`: responsive page and dialog styles.
+- `ritual-video.mjs`: optional inline video playback, skip/end handoff, visibility pause, autoplay retry, and bounded failure handling.
 - `ticket.mjs`: immutable selection-slip snapshot and shared Canvas paper rendering for the transparent preview and complete PNG export.
 - `ticket-ui.mjs` and `ticket.css`: native result dialog, history reopening, download, and file-share fallbacks.
 - `game-motion.mjs` and `game-feel.css`: bounded completion particles, machine recoil, embossed controls, panel overshoot, and reduced-motion variants.
