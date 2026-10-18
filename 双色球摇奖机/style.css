@@ -105,7 +105,7 @@ dialog::backdrop { background: #43291f66; backdrop-filter: blur(4px); }
 #preset-editor legend { width: 100%; font-size: 14px; font-weight: 650; }
 #preset-editor legend span { float: right; color: #978672; font-size: 12px; font-weight: 400; }
 .number-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
-.number-grid button { display: grid; place-items: center; min-width: 0; min-height: 44px; aspect-ratio: 1; border: 0; border-radius: 50%; background: url("assets/red-ball-small.webp") center / 106% no-repeat; color: white; font: inherit; font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; text-shadow: 0 1px 1px #9f282a30; padding: 4px; opacity: .7; appearance: none; }
+.number-grid button { display: grid; place-items: center; min-width: 0; min-height: 44px; aspect-ratio: 1; border: 0; border-radius: 50%; background: url("assets/red-ball-small.webp") center / 106% no-repeat; color: white; font: inherit; font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; text-shadow: 0 1px 1px #9f282a30; padding: 4px; opacity: .5; appearance: none; }
 .number-grid button[aria-pressed="true"] { opacity: 1; }
 .number-grid button:disabled { cursor: default; -webkit-text-fill-color: currentColor; }
 .blue-number-grid button { background-image: url("assets/blue-ball-small.webp"); }
